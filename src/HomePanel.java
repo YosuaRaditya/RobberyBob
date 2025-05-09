@@ -41,19 +41,21 @@ public class HomePanel extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 if (arenaABox.contains(e.getPoint())) {
                     System.out.println("Arena A dipilih!");
-                    parentFrame.setContentPane(new ArenaA(parentFrame));
-                    parentFrame.revalidate();
+                    frame.setContentPane(new ArenaA(frame));
+                    frame.revalidate();
+                    frame.repaint();
+                    frame.getContentPane().requestFocusInWindow();  // PENTING
                 } else if (arenaBBox.contains(e.getPoint())) {
                     System.out.println("Arena B dipilih!");
-                    parentFrame.setContentPane(new ArenaB(parentFrame));
+                    parentFrame.setContentPane(new ArenaB(parentFrame));  // Ganti konten menjadi ArenaB
                     parentFrame.revalidate();
                 } else if (arenaCBox.contains(e.getPoint())) {
                     System.out.println("Arena C dipilih!");
-                    parentFrame.setContentPane(new ArenaC(parentFrame));
+                    parentFrame.setContentPane(new ArenaC(parentFrame));  // Ganti konten menjadi ArenaC
                     parentFrame.revalidate();
                 } else if (arenaDBox.contains(e.getPoint())) {
                     System.out.println("Arena D dipilih!");
-                    parentFrame.setContentPane(new ArenaD(parentFrame));
+                    parentFrame.setContentPane(new ArenaD(parentFrame));  // Ganti konten menjadi ArenaD
                     parentFrame.revalidate();
                 }
             }
