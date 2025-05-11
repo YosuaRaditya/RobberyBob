@@ -12,7 +12,7 @@ public class ArenaD extends Arena {
     public ArenaD(JFrame frame) {
         setLayout(null);
         try {
-            mapImage = ImageIO.read(new File("Assets/mapArenaD.jpg"));
+            mapImage = ImageIO.read(new File("RobberyBob/Assets/mapArenaD.jpg"));
         } catch (IOException e) {
             System.out.println("Gagal load map Arena A: " + e.getMessage());
         }

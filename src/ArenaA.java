@@ -14,30 +14,35 @@ public class ArenaA extends JPanel {
     private Timer timer;
     private BufferedImage mapImage;
     private JButton backButton;
-    private int spriteX = 100, spriteY = 100;
+    private int spriteX = 120, spriteY = 370;
     private String arah = "kanan";  // arah default
 
-    // ✅ Ukuran tampilan sprite yang bisa diatur
+    // Ukuran tampilan sprite yang bisa diatur
     private int spriteWidth = 200;
     private int spriteHeight = 200;
+
+    // Status pergerakan
+    private boolean isMoving = false;
 
     public ArenaA(JFrame parentFrame) {
         setLayout(null);
 
         try {
             for (int i = 0; i < 16; i++) {
-                sprites[i] = ImageIO.read(new File("Assets/jalan" + i + ".png"));
+                sprites[i] = ImageIO.read(new File("RobberyBob/Assets/jalan" + i + ".png"));
             }
-            mapImage = ImageIO.read(new File("Assets/mapArenaA.jpg"));
+            mapImage = ImageIO.read(new File("RobberyBob/Assets/mapArenaA.jpg"));
         } catch (IOException e) {
             System.out.println("Error loading sprites or map: " + e.getMessage());
         }
 
+        // Timer untuk animasi, hanya akan aktif saat bergerak
         timer = new Timer(100, e -> {
-            spriteIndex = (spriteIndex + 1) % 16;
-            repaint();
+            if (isMoving) {
+                spriteIndex = (spriteIndex + 1) % 16;
+                repaint();
+            }
         });
-        timer.start();
 
         backButton = new JButton("Back");
         backButton.setBounds(30, 30, 100, 40);
@@ -51,22 +56,42 @@ public class ArenaA extends JPanel {
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
+                boolean wasMoving = isMoving;
+                isMoving = true;
+
                 int keyCode = e.getKeyCode();
 
-                if (keyCode == KeyEvent.VK_W) {
-                    spriteY -= 5;
-                    arah = "atas";
-                } else if (keyCode == KeyEvent.VK_S) {
-                    spriteY += 5;
-                    arah = "bawah";
-                } else if (keyCode == KeyEvent.VK_A) {
-                    spriteX -= 5;
-                    arah = "kiri";
-                } else if (keyCode == KeyEvent.VK_D) {
-                    spriteX += 5;
-                    arah = "kanan";
+                switch (keyCode) {
+                    case KeyEvent.VK_W -> {
+                        spriteY -= 5;
+                        arah = "atas";
+                    }
+                    case KeyEvent.VK_S -> {
+                        spriteY += 5;
+                        arah = "bawah";
+                    }
+                    case KeyEvent.VK_A -> {
+                        spriteX -= 5;
+                        arah = "kiri";
+                    }
+                    case KeyEvent.VK_D -> {
+                        spriteX += 5;
+                        arah = "kanan";
+                    }
                 }
 
+                if (!wasMoving && !timer.isRunning()) {
+                    timer.start(); // mulai animasi saat pertama kali bergerak
+                }
+
+                repaint();
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                isMoving = false;
+                timer.stop();         // stop animasi
+                spriteIndex = 0;      // kembali ke frame awal (diam)
                 repaint();
             }
         });
@@ -76,39 +101,38 @@ public class ArenaA extends JPanel {
     }
 
     @Override
-protected void paintComponent(Graphics g) {
-    super.paintComponent(g);
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
 
-    if (mapImage != null) {
-        g.drawImage(mapImage, 0, 0, getWidth(), getHeight(), null);
+        if (mapImage != null) {
+            g.drawImage(mapImage, 0, 0, getWidth(), getHeight(), null);
+        }
+
+        if (sprites[spriteIndex] != null) {
+            Graphics2D g2d = (Graphics2D) g.create();
+
+            // Hitung rotasi berdasarkan arah
+            double angle = switch (arah) {
+                case "kiri" -> -Math.PI / 2;
+                case "kanan" -> Math.PI / 2;
+                case "bawah" -> Math.PI;
+                default -> 0; // atas
+            };
+
+            // Skala sprite ke ukuran yang diinginkan
+            BufferedImage scaledSprite = new BufferedImage(spriteWidth, spriteHeight, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D gScaled = scaledSprite.createGraphics();
+            gScaled.drawImage(sprites[spriteIndex], 0, 0, spriteWidth, spriteHeight, null);
+            gScaled.dispose();
+
+            // Rotasi sprite di tengah
+            AffineTransform transform = new AffineTransform();
+            transform.translate(spriteX + spriteWidth / 2.0, spriteY + spriteHeight / 2.0);
+            transform.rotate(angle);
+            transform.translate(-spriteWidth / 2.0, -spriteHeight / 2.0);
+
+            g2d.drawImage(scaledSprite, transform, null);
+            g2d.dispose();
+        }
     }
-
-    if (sprites[spriteIndex] != null) {
-        Graphics2D g2d = (Graphics2D) g.create();
-
-        // Hitung rotasi
-        double angle = switch (arah) {
-            case "kiri" -> -Math.PI / 2;
-            case "kanan" -> Math.PI / 2;
-            case "bawah" -> Math.PI;
-            default -> 0;
-        };
-
-        // Buat gambar sprite yang sudah diskalakan
-        BufferedImage scaledSprite = new BufferedImage(spriteWidth, spriteHeight, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D gScaled = scaledSprite.createGraphics();
-        gScaled.drawImage(sprites[spriteIndex], 0, 0, spriteWidth, spriteHeight, null);
-        gScaled.dispose();
-
-        // Transformasi untuk rotasi di tengah sprite
-        AffineTransform transform = new AffineTransform();
-        transform.translate(spriteX + spriteWidth / 2.0, spriteY + spriteHeight / 2.0);
-        transform.rotate(angle);
-        transform.translate(-spriteWidth / 2.0, -spriteHeight / 2.0);
-
-        g2d.drawImage(scaledSprite, transform, null);
-        g2d.dispose();
-    }
-}
-
 }

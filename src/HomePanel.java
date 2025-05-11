@@ -8,7 +8,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 public class HomePanel extends JPanel {
-
+    
     private BufferedImage background;
     private BufferedImage arenaA, arenaB, arenaC, arenaD;
     private Rectangle arenaABox, arenaBBox, arenaCBox, arenaDBox;
@@ -20,11 +20,11 @@ public class HomePanel extends JPanel {
         this.parentFrame = frame;
 
         try {
-            background = ImageIO.read(new File("Assets/bgHome.jpg"));
-            arenaA = ImageIO.read(new File("Assets/arenaA.png"));
-            arenaB = ImageIO.read(new File("Assets/arenaB.png"));
-            arenaC = ImageIO.read(new File("Assets/arenaC.png"));
-            arenaD = ImageIO.read(new File("Assets/arenaD.png"));
+            background = ImageIO.read(new File("RobberyBob/Assets/bgHome.jpg"));
+            arenaA = ImageIO.read(new File("RobberyBob/Assets/arenaA.png"));
+            arenaB = ImageIO.read(new File("RobberyBob/Assets/arenaB.png"));
+            arenaC = ImageIO.read(new File("RobberyBob/Assets/arenaC.png"));
+            arenaD = ImageIO.read(new File("RobberyBob/Assets/arenaD.png"));
         } catch (IOException e) {
             System.out.println("Gagal memuat gambar: " + e.getMessage());
             e.printStackTrace();
@@ -47,8 +47,10 @@ public class HomePanel extends JPanel {
                     frame.getContentPane().requestFocusInWindow();  // PENTING
                 } else if (arenaBBox.contains(e.getPoint())) {
                     System.out.println("Arena B dipilih!");
-                    parentFrame.setContentPane(new ArenaB(parentFrame));  // Ganti konten menjadi ArenaB
-                    parentFrame.revalidate();
+                    frame.setContentPane(new ArenaB(frame));
+                    frame.revalidate();
+                    frame.repaint();
+                    frame.getContentPane().requestFocusInWindow();  // PENTING
                 } else if (arenaCBox.contains(e.getPoint())) {
                     System.out.println("Arena C dipilih!");
                     parentFrame.setContentPane(new ArenaC(parentFrame));  // Ganti konten menjadi ArenaC
