@@ -15,9 +15,10 @@ public class ArenaA extends JPanel {
     private int spriteIndex = 0;
     private Timer timer;
     private BufferedImage mapImage;
+    private BufferedImage collisionMap;
     private JButton backButton;
     private int spriteX = 120, spriteY = 370;
-    private String arah = "kanan";  // arah default
+    private String arah = "kanan";
     private int spriteWidth = 200;
     private int spriteHeight = 200;
     private boolean isMoving = false;
@@ -31,6 +32,7 @@ public class ArenaA extends JPanel {
                 sprites[i] = ImageIO.read(new File("RobberyBob/Assets/jalan" + i + ".png"));
             }
             mapImage = ImageIO.read(new File("RobberyBob/Assets/mapArenaA.jpg"));
+            collisionMap = ImageIO.read(new File("RobberyBob/Assets/collisionArenaA.jpg"));
         } catch (IOException e) {
             System.out.println("Error loading sprites or map: " + e.getMessage());
         }
@@ -57,35 +59,46 @@ public class ArenaA extends JPanel {
                 keysPressed.add(e.getKeyCode());
                 isMoving = true;
 
-                // Deteksi kombinasi arah
+                int dx = 0, dy = 0;
+
                 if (keysPressed.contains(KeyEvent.VK_W) && keysPressed.contains(KeyEvent.VK_D)) {
-                    spriteY -= 5;
-                    spriteX += 5;
+                    dx = 5;
+                    dy = -5;
                     arah = "kanan_atas";
                 } else if (keysPressed.contains(KeyEvent.VK_W) && keysPressed.contains(KeyEvent.VK_A)) {
-                    spriteY -= 5;
-                    spriteX -= 5;
+                    dx = -5;
+                    dy = -5;
                     arah = "kiri_atas";
                 } else if (keysPressed.contains(KeyEvent.VK_S) && keysPressed.contains(KeyEvent.VK_D)) {
-                    spriteY += 5;
-                    spriteX += 5;
+                    dx = 5;
+                    dy = 5;
                     arah = "kanan_bawah";
                 } else if (keysPressed.contains(KeyEvent.VK_S) && keysPressed.contains(KeyEvent.VK_A)) {
-                    spriteY += 5;
-                    spriteX -= 5;
+                    dx = -5;
+                    dy = 5;
                     arah = "kiri_bawah";
                 } else if (keysPressed.contains(KeyEvent.VK_W)) {
-                    spriteY -= 5;
+                    dx = 0;
+                    dy = -5;
                     arah = "atas";
                 } else if (keysPressed.contains(KeyEvent.VK_S)) {
-                    spriteY += 5;
+                    dx = 0;
+                    dy = 5;
                     arah = "bawah";
                 } else if (keysPressed.contains(KeyEvent.VK_A)) {
-                    spriteX -= 5;
+                    dx = -5;
+                    dy = 0;
                     arah = "kiri";
                 } else if (keysPressed.contains(KeyEvent.VK_D)) {
-                    spriteX += 5;
+                    dx = 5;
+                    dy = 0;
                     arah = "kanan";
+                }
+
+                // Cek apakah posisi tujuan dapat dilewati
+                if (isWalkable(spriteX + dx + spriteWidth / 2, spriteY + dy + spriteHeight / 2)) {
+                    spriteX += dx;
+                    spriteY += dy;
                 }
 
                 if (!timer.isRunning()) timer.start();
@@ -108,6 +121,27 @@ public class ArenaA extends JPanel {
         requestFocusInWindow();
     }
 
+    private boolean isWalkable(int x, int y) {
+        int panelWidth = getWidth();
+        int panelHeight = getHeight();
+        int imageWidth = collisionMap.getWidth();
+        int imageHeight = collisionMap.getHeight();
+
+        // Hitung skala posisi sprite terhadap ukuran asli gambar collision
+        int scaledX = x * imageWidth / panelWidth;
+        int scaledY = y * imageHeight / panelHeight;
+
+        if (scaledX < 0 || scaledY < 0 || scaledX >= imageWidth || scaledY >= imageHeight) {
+            return false;
+        }
+
+        int pixelColor = collisionMap.getRGB(scaledX, scaledY);
+        Color color = new Color(pixelColor);
+
+        return color.getRed() > 200 && color.getGreen() > 200 && color.getBlue() > 200;
+    }
+
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -127,10 +161,9 @@ public class ArenaA extends JPanel {
                 case "kiri_bawah" -> Math.toRadians(-135);
                 case "kanan_atas" -> Math.toRadians(45);
                 case "kanan_bawah" -> Math.toRadians(135);
-                default -> 0; // atas
+                default -> 0;
             };
 
-            // Skala dan rotasi
             BufferedImage scaledSprite = new BufferedImage(spriteWidth, spriteHeight, BufferedImage.TYPE_INT_ARGB);
             Graphics2D gScaled = scaledSprite.createGraphics();
             gScaled.drawImage(sprites[spriteIndex], 0, 0, spriteWidth, spriteHeight, null);
