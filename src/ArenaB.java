@@ -15,7 +15,7 @@ public class ArenaB extends JPanel {
     private BufferedImage mapImage;
     private JButton backButton;
     private int spriteX = 260, spriteY = 40;
-    private String arah = "kanan";  // arah default
+    private String arah = "kanan";  // arah default 
 
     private int spriteWidth = 200;
     private int spriteHeight = 200;

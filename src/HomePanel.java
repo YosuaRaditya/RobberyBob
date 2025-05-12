@@ -31,10 +31,10 @@ public class HomePanel extends JPanel {
         }
 
         // Atur posisi keempat arena
-        arenaABox = new Rectangle(500, 100, 330, 300);
+        arenaABox = new Rectangle(500, 110, 310, 280);
         arenaBBox = new Rectangle(900, 107, 327, 297);
-        arenaCBox = new Rectangle(500, 390, 328, 298);
-        arenaDBox = new Rectangle(910, 380, 317, 287);
+        arenaCBox = new Rectangle(500, 397, 316, 277);
+        arenaDBox = new Rectangle(905, 380, 327, 290);
 
         addMouseListener(new MouseAdapter() {
             @Override
