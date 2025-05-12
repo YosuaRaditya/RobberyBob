@@ -6,6 +6,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import javax.imageio.ImageIO;
 
 public class ArenaA extends JPanel {
@@ -16,13 +18,10 @@ public class ArenaA extends JPanel {
     private JButton backButton;
     private int spriteX = 120, spriteY = 370;
     private String arah = "kanan";  // arah default
-
-    // Ukuran tampilan sprite yang bisa diatur
     private int spriteWidth = 200;
     private int spriteHeight = 200;
-
-    // Status pergerakan
     private boolean isMoving = false;
+    private Set<Integer> keysPressed = new HashSet<>();
 
     public ArenaA(JFrame parentFrame) {
         setLayout(null);
@@ -36,7 +35,6 @@ public class ArenaA extends JPanel {
             System.out.println("Error loading sprites or map: " + e.getMessage());
         }
 
-        // Timer untuk animasi, hanya akan aktif saat bergerak
         timer = new Timer(100, e -> {
             if (isMoving) {
                 spriteIndex = (spriteIndex + 1) % 16;
@@ -56,43 +54,53 @@ public class ArenaA extends JPanel {
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                boolean wasMoving = isMoving;
+                keysPressed.add(e.getKeyCode());
                 isMoving = true;
 
-                int keyCode = e.getKeyCode();
-
-                switch (keyCode) {
-                    case KeyEvent.VK_W -> {
-                        spriteY -= 5;
-                        arah = "atas";
-                    }
-                    case KeyEvent.VK_S -> {
-                        spriteY += 5;
-                        arah = "bawah";
-                    }
-                    case KeyEvent.VK_A -> {
-                        spriteX -= 5;
-                        arah = "kiri";
-                    }
-                    case KeyEvent.VK_D -> {
-                        spriteX += 5;
-                        arah = "kanan";
-                    }
+                // Deteksi kombinasi arah
+                if (keysPressed.contains(KeyEvent.VK_W) && keysPressed.contains(KeyEvent.VK_D)) {
+                    spriteY -= 5;
+                    spriteX += 5;
+                    arah = "kanan_atas";
+                } else if (keysPressed.contains(KeyEvent.VK_W) && keysPressed.contains(KeyEvent.VK_A)) {
+                    spriteY -= 5;
+                    spriteX -= 5;
+                    arah = "kiri_atas";
+                } else if (keysPressed.contains(KeyEvent.VK_S) && keysPressed.contains(KeyEvent.VK_D)) {
+                    spriteY += 5;
+                    spriteX += 5;
+                    arah = "kanan_bawah";
+                } else if (keysPressed.contains(KeyEvent.VK_S) && keysPressed.contains(KeyEvent.VK_A)) {
+                    spriteY += 5;
+                    spriteX -= 5;
+                    arah = "kiri_bawah";
+                } else if (keysPressed.contains(KeyEvent.VK_W)) {
+                    spriteY -= 5;
+                    arah = "atas";
+                } else if (keysPressed.contains(KeyEvent.VK_S)) {
+                    spriteY += 5;
+                    arah = "bawah";
+                } else if (keysPressed.contains(KeyEvent.VK_A)) {
+                    spriteX -= 5;
+                    arah = "kiri";
+                } else if (keysPressed.contains(KeyEvent.VK_D)) {
+                    spriteX += 5;
+                    arah = "kanan";
                 }
 
-                if (!wasMoving && !timer.isRunning()) {
-                    timer.start(); // mulai animasi saat pertama kali bergerak
-                }
-
+                if (!timer.isRunning()) timer.start();
                 repaint();
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
-                isMoving = false;
-                timer.stop();         // stop animasi
-                spriteIndex = 0;      // kembali ke frame awal (diam)
-                repaint();
+                keysPressed.remove(e.getKeyCode());
+                if (keysPressed.isEmpty()) {
+                    isMoving = false;
+                    timer.stop();
+                    spriteIndex = 0;
+                    repaint();
+                }
             }
         });
 
@@ -111,21 +119,23 @@ public class ArenaA extends JPanel {
         if (sprites[spriteIndex] != null) {
             Graphics2D g2d = (Graphics2D) g.create();
 
-            // Hitung rotasi berdasarkan arah
             double angle = switch (arah) {
-                case "kiri" -> -Math.PI / 2;
                 case "kanan" -> Math.PI / 2;
+                case "kiri" -> -Math.PI / 2;
                 case "bawah" -> Math.PI;
+                case "kiri_atas" -> Math.toRadians(-45);
+                case "kiri_bawah" -> Math.toRadians(-135);
+                case "kanan_atas" -> Math.toRadians(45);
+                case "kanan_bawah" -> Math.toRadians(135);
                 default -> 0; // atas
             };
 
-            // Skala sprite ke ukuran yang diinginkan
+            // Skala dan rotasi
             BufferedImage scaledSprite = new BufferedImage(spriteWidth, spriteHeight, BufferedImage.TYPE_INT_ARGB);
             Graphics2D gScaled = scaledSprite.createGraphics();
             gScaled.drawImage(sprites[spriteIndex], 0, 0, spriteWidth, spriteHeight, null);
             gScaled.dispose();
 
-            // Rotasi sprite di tengah
             AffineTransform transform = new AffineTransform();
             transform.translate(spriteX + spriteWidth / 2.0, spriteY + spriteHeight / 2.0);
             transform.rotate(angle);
