@@ -53,12 +53,16 @@ public class HomePanel extends JPanel {
                     frame.getContentPane().requestFocusInWindow();  // PENTING
                 } else if (arenaCBox.contains(e.getPoint())) {
                     System.out.println("Arena C dipilih!");
-                    parentFrame.setContentPane(new ArenaC(parentFrame));  // Ganti konten menjadi ArenaC
-                    parentFrame.revalidate();
+                    frame.setContentPane(new ArenaC(frame));
+                    frame.revalidate();
+                    frame.repaint();
+                    frame.getContentPane().requestFocusInWindow();  // PENTING
                 } else if (arenaDBox.contains(e.getPoint())) {
                     System.out.println("Arena D dipilih!");
-                    parentFrame.setContentPane(new ArenaD(parentFrame));  // Ganti konten menjadi ArenaD
-                    parentFrame.revalidate();
+                    frame.setContentPane(new ArenaD(frame));
+                    frame.revalidate();
+                    frame.repaint();
+                    frame.getContentPane().requestFocusInWindow();  // PENTING
                 }
             }
         });
