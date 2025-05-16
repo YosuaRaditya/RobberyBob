@@ -1,43 +1,12 @@
-import javax.swing.*;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import javax.imageio.ImageIO;
+import javax.swing.JFrame;
 
 public class ArenaB extends Arena {
-    private BufferedImage mapImage;
-    private JButton backButton;
-
-    public ArenaB(JFrame frame) {
-        setLayout(null);
-        try {
-            mapImage = ImageIO.read(new File("Assets/mapArenaB.jpg"));
-        } catch (IOException e) {
-            System.out.println("Gagal load map Arena A: " + e.getMessage());
-        }
-
-        // Tombol Back
-        backButton = new JButton("Back");
-        backButton.setBounds(30, 30, 100, 40);
-        backButton.addActionListener(e -> {
-            frame.setContentPane(new HomePanel(frame));
-            frame.revalidate();
-            frame.repaint();
-        });
-        add(backButton);
-    }
-
-    @Override
-    public BufferedImage getMapImage() {
-        return mapImage;
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        if (mapImage != null) {
-            g.drawImage(mapImage, 0, 0, getWidth(), getHeight(), null);
-        }
+    public ArenaB(JFrame parentFrame) {
+        super(
+            "RobberyBob/Assets/mapArenaB.jpg", 
+            "RobberyBob/Assets/collisionArenaB.jpg", 
+            170, 100,  // Posisi awal RobberyBob di ArenaB (ubah sesuai kebutuhan)
+            parentFrame
+        );
     }
 }
