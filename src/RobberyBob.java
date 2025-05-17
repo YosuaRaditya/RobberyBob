@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.geom.Ellipse2D;
+
 
 public class RobberyBob {
     private BufferedImage[] sprites = new BufferedImage[16];
@@ -44,7 +46,23 @@ public class RobberyBob {
 
         int dx = 0, dy = 0;
 
-        if (keysPressed.contains(KeyEvent.VK_W) && keysPressed.contains(KeyEvent.VK_D)) {
+        if (keysPressed.contains(KeyEvent.VK_W) && keysPressed.contains(KeyEvent.VK_D) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = 10; dy = -10; arah = "kanan_atas";
+        } else if (keysPressed.contains(KeyEvent.VK_W) && keysPressed.contains(KeyEvent.VK_A) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = -10; dy = -10; arah = "kiri_atas";
+        } else if (keysPressed.contains(KeyEvent.VK_S) && keysPressed.contains(KeyEvent.VK_D) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = 10; dy = 10; arah = "kanan_bawah";
+        } else if (keysPressed.contains(KeyEvent.VK_S) && keysPressed.contains(KeyEvent.VK_A) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = -10; dy = 10; arah = "kiri_bawah";
+        } else if (keysPressed.contains(KeyEvent.VK_W) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = 0; dy = -10; arah = "atas";
+        } else if (keysPressed.contains(KeyEvent.VK_S) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = 0; dy = 10; arah = "bawah";
+        } else if (keysPressed.contains(KeyEvent.VK_A) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = -10; dy = 0; arah = "kiri";
+        } else if (keysPressed.contains(KeyEvent.VK_D) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = 10; dy = 0; arah = "kanan";
+        } else if (keysPressed.contains(KeyEvent.VK_W) && keysPressed.contains(KeyEvent.VK_D)) {
             dx = 5; dy = -5; arah = "kanan_atas";
         } else if (keysPressed.contains(KeyEvent.VK_W) && keysPressed.contains(KeyEvent.VK_A)) {
             dx = -5; dy = -5; arah = "kiri_atas";
@@ -121,4 +139,28 @@ public class RobberyBob {
         Color color = new Color(map.getRGB(scaledX, scaledY));
         return color.getRed() > 200 && color.getGreen() > 200 && color.getBlue() > 200;
     }
+
+    public Rectangle getBounds() {
+        return new Rectangle(x, y, width, height);
+    }
+
+    public Ellipse2D getDetectionCircle() {
+        int radius = 60;
+        int centerX = x + width / 2;
+        int centerY = y + height / 2;
+        return new Ellipse2D.Double(centerX - radius, centerY - radius, radius * 2, radius * 2);
+    }
+
+    public void drawDetectionArea(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g.create();
+        int radius = 60;
+        int centerX = x + width / 2;
+        int centerY = y + height / 2;
+        int diameter = radius * 2;
+
+        g2d.setColor(new Color(255, 255, 0, 100)); // Kuning transparan
+        g2d.fillOval(centerX - radius, centerY - radius, diameter, diameter);
+        g2d.dispose();
+    }
+
 }
