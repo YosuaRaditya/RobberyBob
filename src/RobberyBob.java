@@ -15,7 +15,7 @@ public class RobberyBob {
     private BufferedImage[] sprites = new BufferedImage[16];
     private int spriteIndex = 0;
     private int x, y;
-    private int width = 200, height = 200;
+    private int width = 170, height = 170;
     private String arah = "kanan";
     private boolean isMoving = false;
     private Set<Integer> keysPressed = new HashSet<>();
@@ -145,7 +145,7 @@ public class RobberyBob {
     }
 
     public Ellipse2D getDetectionCircle() {
-        int radius = 60;
+        int radius = 40;
         int centerX = x + width / 2;
         int centerY = y + height / 2;
         return new Ellipse2D.Double(centerX - radius, centerY - radius, radius * 2, radius * 2);
@@ -153,7 +153,7 @@ public class RobberyBob {
 
     public void drawDetectionArea(Graphics g) {
         Graphics2D g2d = (Graphics2D) g.create();
-        int radius = 60;
+        int radius = 40;
         int centerX = x + width / 2;
         int centerY = y + height / 2;
         int diameter = radius * 2;

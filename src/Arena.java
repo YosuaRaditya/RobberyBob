@@ -72,7 +72,7 @@ public class Arena extends JPanel {
         bob.draw(g, this);
 
         // Gambar area deteksi (lingkaran kuning transparan)
-        // bob.drawDetectionArea(g);
+        bob.drawDetectionArea(g);
 
         // Cek apakah ada barang yang masuk area lingkaran
         for (int i = 0; i < itemList.size(); i++) {
