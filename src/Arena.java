@@ -51,6 +51,14 @@ public class Arena extends JPanel {
         });
 
         setFocusable(true);
+        // Tambahkan di akhir constructor Arena (setelah setFocusable)
+        Timer shineTimer = new Timer(40, e -> { 
+            for (Item item : itemList) {
+                item.updateShine(); // update frame animasi shine di setiap item
+            }
+            repaint(); // render ulang
+        });
+        shineTimer.start();
         requestFocusInWindow();
     }
 

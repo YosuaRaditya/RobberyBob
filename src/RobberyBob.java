@@ -14,7 +14,7 @@ import java.awt.geom.Ellipse2D;
 public class RobberyBob {
     private BufferedImage[] sprites = new BufferedImage[16];
     private int spriteIndex = 0;
-    private int x, y;
+    private int x, y;   
     private int width = 170, height = 170;
     private String arah = "kanan";
     private boolean isMoving = false;

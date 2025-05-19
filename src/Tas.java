@@ -5,8 +5,8 @@ import java.awt.image.BufferedImage;
 
 public class Tas extends Item {
     public Tas(int x, int y) {
-        super(x, y, 40, 40, 50, loadImage());
-    } 
+        super(x, y, 40, 40, 50, loadImage(), "cahayaKuning"); // shine kuning
+    }
 
     private static BufferedImage loadImage() {
         try {
@@ -17,3 +17,4 @@ public class Tas extends Item {
         }
     }
 }
+
