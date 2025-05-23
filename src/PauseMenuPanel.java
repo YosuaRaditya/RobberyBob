@@ -77,56 +77,56 @@ public class PauseMenuPanel extends JPanel {
     }
 
     @Override
-protected void paintComponent(Graphics g) {
-    super.paintComponent(g);
-    if (background != null) {
-        g.drawImage(background, 0, 0, getWidth(), getHeight(), this);
-    }
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        if (background != null) {
+            g.drawImage(background, 0, 0, getWidth(), getHeight(), this);
+        }
 
-    Graphics2D g2d = (Graphics2D) g.create();
-    g2d.setFont(new Font("Arial", Font.BOLD, 24));
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setFont(new Font("Arial", Font.BOLD, 24));
 
-    // Hitung posisi tengah tombol
-    int totalWidth = (buttonWidth * 3) + (spacing * 2);
-    int startX = (getWidth() - totalWidth) / 2;
+        // Hitung posisi tengah tombol
+        int totalWidth = (buttonWidth * 3) + (spacing * 2);
+        int startX = (getWidth() - totalWidth) / 2;
 
-    // Tulisan di bawah masing-masing tombol
-    g2d.setColor(Color.BLACK);
-    g2d.setFont(new Font("Verdana", Font.BOLD, 20));
-    for (int i = 0; i < 3; i++) {
-        int x = startX + i * (buttonWidth + spacing) + (buttonWidth / 2);
-        int y = centerY + buttonHeight + labelYOffset;
+        // Tulisan di bawah masing-masing tombol
+        g2d.setColor(Color.BLACK);
+        g2d.setFont(new Font("Verdana", Font.BOLD, 20));
+        for (int i = 0; i < 3; i++) {
+            int x = startX + i * (buttonWidth + spacing) + (buttonWidth / 2);
+            int y = centerY + buttonHeight + labelYOffset;
 
-        String text = buttonLabels[i];
-        int textWidth = g2d.getFontMetrics().stringWidth(text);
+            String text = buttonLabels[i];
+            int textWidth = g2d.getFontMetrics().stringWidth(text);
 
-        g2d.drawString(text, x - textWidth / 2, y);
-    }
+            g2d.drawString(text, x - textWidth / 2, y);
+        }
 
-    // ==== Tulisan "Permainan Dijeda" di atas tombol ====
-    String title = "PERMAINAN DIJEDA";
-    Font titleFont = new Font("Verdana", Font.BOLD, 25);
-    g2d.setFont(titleFont);
-    FontMetrics fm = g2d.getFontMetrics();
-    int titleWidth = fm.stringWidth(title);
-    int titleX = (getWidth() - titleWidth) / 2;
-    int titleYFinal = 250; // Lebih rendah dari sebelumnya
+        // ==== Tulisan "Permainan Dijeda" di atas tombol ====
+        String title = "PERMAINAN DIJEDA";
+        Font titleFont = new Font("Verdana", Font.BOLD, 25);
+        g2d.setFont(titleFont);
+        FontMetrics fm = g2d.getFontMetrics();
+        int titleWidth = fm.stringWidth(title);
+        int titleX = (getWidth() - titleWidth) / 2;
+        int titleYFinal = 250; // Lebih rendah dari sebelumnya
 
-    // Stroke hitam tebal (gambar teks hitam di sekeliling teks putih)
-    g2d.setColor(Color.BLACK);
-    for (int dx = -2; dx <= 2; dx++) {
-        for (int dy = -2; dy <= 2; dy++) {
-            if (dx != 0 || dy != 0) {
-                g2d.drawString(title, titleX + dx, titleYFinal + dy);
+        // Stroke hitam tebal (gambar teks hitam di sekeliling teks putih)
+        g2d.setColor(Color.BLACK);
+        for (int dx = -2; dx <= 2; dx++) {
+            for (int dy = -2; dy <= 2; dy++) {
+                if (dx != 0 || dy != 0) {
+                    g2d.drawString(title, titleX + dx, titleYFinal + dy);
+                }
             }
         }
+
+        // Tulisan utama warna putih
+        g2d.setColor(Color.WHITE);
+        g2d.drawString(title, titleX, titleYFinal);
+
+        g2d.dispose();
     }
-
-    // Tulisan utama warna putih
-    g2d.setColor(Color.WHITE);
-    g2d.drawString(title, titleX, titleYFinal);
-
-    g2d.dispose();
-}
 
 }
