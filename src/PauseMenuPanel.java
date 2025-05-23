@@ -40,18 +40,77 @@ public class PauseMenuPanel extends JPanel {
         int totalWidth = (buttonWidth * 3) + (spacing * 2);
         int startX = (getPreferredSize().width - totalWidth) / 2 + 150;
 
-        restartButton = createIconButton("RobberyBob/Assets/restartIcon.png", 150);
-        homeButton = createIconButton("RobberyBob/Assets/exitIcon.png", 150);
-        nextButton = createIconButton("RobberyBob/Assets/nextIcon.png", 150);
+        // Buat tombolnya
+        homeButton = createIconButton("RobberyBob/Assets/exitIcon.png", 150);       // Menu
+        restartButton = createIconButton("RobberyBob/Assets/restartIcon.png", 150); // Coba Lagi
+        nextButton = createIconButton("RobberyBob/Assets/nextIcon.png", 150);       // Selanjutnya
 
-        add(restartButton);
+        // Tambahkan tombol ke panel
         add(homeButton);
+        add(restartButton);
         add(nextButton);
 
-        restartButton.setBounds(startX, centerY, buttonWidth, buttonHeight);
-        homeButton.setBounds(startX + buttonWidth + spacing, centerY, buttonWidth, buttonHeight);
+        // Atur posisi tombol sesuai urutan yang benar
+        homeButton.setBounds(startX, centerY, buttonWidth, buttonHeight);
+        restartButton.setBounds(startX + buttonWidth + spacing, centerY, buttonWidth, buttonHeight);
         nextButton.setBounds(startX + 2 * (buttonWidth + spacing), centerY, buttonWidth, buttonHeight);
+
+        // Action listener untuk tombol home/menu
+        homeButton.addActionListener(e -> {
+            parentFrame.setContentPane(new HomePanel(parentFrame));
+            parentFrame.revalidate();
+            parentFrame.repaint();
+        });
+
+        // Action listener untuk tombol restart/coba lagi
+        restartButton.addActionListener(e -> {
+            Arena newArena = null;
+
+            if (arena instanceof ArenaA) {
+                newArena = new ArenaA(parentFrame);
+            } else if (arena instanceof ArenaB) {
+                newArena = new ArenaB(parentFrame);
+            } else if (arena instanceof ArenaC) {
+                newArena = new ArenaC(parentFrame);
+            } else if (arena instanceof ArenaD) {
+                newArena = new ArenaD(parentFrame);
+            }
+
+            if (newArena != null) {
+                parentFrame.setContentPane(newArena);
+                parentFrame.revalidate();
+                parentFrame.repaint();
+                newArena.requestFocusInWindow();
+            }
+        });
+
+        // Action listener untuk tombol selanjutnya
+        nextButton.addActionListener(e -> {
+            Arena nextArena = null;
+
+            if (arena instanceof ArenaA) {
+                nextArena = new ArenaB(parentFrame); // Ganti dengan arena selanjutnya
+            } else if (arena instanceof ArenaB) {
+                nextArena = new ArenaC(parentFrame);
+            } else if (arena instanceof ArenaC) {
+                nextArena = new ArenaD(parentFrame);
+            } else {
+                JOptionPane.showMessageDialog(parentFrame, "Sudah di arena terakhir!");
+            }
+
+            if (nextArena != null) {
+                parentFrame.setContentPane(nextArena);
+                parentFrame.revalidate();
+                parentFrame.repaint();
+                nextArena.requestFocusInWindow();
+            }
+        });
+
+
+
+        
     }
+
 
     private JButton createIconButton(String imagePath, int size) {
         JButton button = new JButton();
