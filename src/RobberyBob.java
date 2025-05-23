@@ -17,7 +17,9 @@ public class RobberyBob {
     private BufferedImage[] smokeSprites = new BufferedImage[9];
     private int spriteIndex = 0;
     private int smokeIndex = 0;
-    private int x, y;   
+    // Use float for smoother movement
+    private float xPos, yPos;   
+    private int x, y; // Integer positions for rendering
     private int width = 170, height = 170;
     private String arah = "kanan";
     private boolean isMoving = false;
@@ -27,13 +29,32 @@ public class RobberyBob {
     private Set<Integer> keysPressed = new HashSet<>();
     private Timer animTimer;
     private Timer smokeTimer;
-    private boolean hasExtraItem = false; // Tambahkan ini
-    private Runnable onLevelComplete; // Callback untuk level selesai
+    private Timer movementTimer;
+    private boolean hasExtraItem = false;
+    private Runnable onLevelComplete;
     private int visibilityRadius = 150;
+    
+    // Movement smoothing variables
+    private float moveSpeedNormal = 2.5f;
+    private float moveSpeedFast = 5.0f;
+    private float currentSpeedX = 0f;
+    private float currentSpeedY = 0f;
+    private float acceleration = 1.0f;
+    private float deceleration = 0.8f;
+    private float maxSpeedX = 0f;
+    private float maxSpeedY = 0f;
+    private float frictionFactor = 0.8f;
+
+    // Add these instance variables to store collision map and panel dimensions
+    private BufferedImage currentCollisionMap;
+    private int currentPanelW;
+    private int currentPanelH;
 
     public RobberyBob(int startX, int startY) {
         this.x = startX;
         this.y = startY;
+        this.xPos = startX;
+        this.yPos = startY;
 
         try {
             // Load character sprites
@@ -65,9 +86,74 @@ public class RobberyBob {
                 ((Timer)e.getSource()).stop(); // Stop the timer when animation completes
             }
         });
+        
+        // Create continuous movement timer for smooth movement
+        movementTimer = new Timer(16, e -> { // ~60 FPS
+            updateMovement();
+        });
+        movementTimer.start();
+    }
+
+    // Update player position based on current speed
+    private void updateMovement() {
+        if (isHiding || currentCollisionMap == null) return;
+        
+        // Apply friction if no keys are pressed
+        if (!isMoving) {
+            currentSpeedX *= frictionFactor;
+            currentSpeedY *= frictionFactor;
+            
+            // Stop completely if speed is very low
+            if (Math.abs(currentSpeedX) < 0.1f) currentSpeedX = 0;
+            if (Math.abs(currentSpeedY) < 0.1f) currentSpeedY = 0;
+        }
+        
+        // Calculate new position
+        float newX = xPos + currentSpeedX;
+        float newY = yPos + currentSpeedY;
+        
+        // Check if new position is walkable using the stored collision map
+        if (isWalkable((int)(newX + width / 2), (int)(newY + height / 2), currentCollisionMap, currentPanelW, currentPanelH)) {
+            xPos = newX;
+            yPos = newY;
+            x = Math.round(xPos);
+            y = Math.round(yPos);
+            
+            // Update hiding area detection
+            inHidingArea = isInHidingArea(x + width / 2, y + height / 2, currentCollisionMap, currentPanelW, currentPanelH);
+        } else {
+            // If collision detected, try moving on X or Y axis separately
+            if (isWalkable((int)(newX + width / 2), (int)(yPos + height / 2), currentCollisionMap, currentPanelW, currentPanelH)) {
+                xPos = newX;
+                x = Math.round(xPos);
+            } else if (isWalkable((int)(xPos + width / 2), (int)(newY + height / 2), currentCollisionMap, currentPanelW, currentPanelH)) {
+                yPos = newY;
+                y = Math.round(yPos);
+            }
+            
+            // Reduce speed when hitting obstacles
+            currentSpeedX *= 0.5f;
+            currentSpeedY *= 0.5f;
+        }
+        
+        // Update animation state
+        if (Math.abs(currentSpeedX) > 0.1f || Math.abs(currentSpeedY) > 0.1f) {
+            if (!animTimer.isRunning()) animTimer.start();
+        } else {
+            isMoving = false;
+            if (animTimer.isRunning()) {
+                animTimer.stop();
+                spriteIndex = 0;
+            }
+        }
     }
 
     public void handleKeyPressed(int keyCode, BufferedImage collisionMap, int panelW, int panelH) {
+        // Store the collision map and dimensions for use in updateMovement
+        this.currentCollisionMap = collisionMap;
+        this.currentPanelW = panelW;
+        this.currentPanelH = panelH;
+        
         keysPressed.add(keyCode);
         
         // Toggle hiding state when 'I' is pressed and in hiding area
@@ -88,67 +174,109 @@ public class RobberyBob {
             return;
         }
         
-        isMoving = true;
-
-        int dx = 0, dy = 0;
+        // Set movement direction and speed based on keys pressed
+        updateDirectionAndSpeed(collisionMap, panelW, panelH);
+    }
+    
+    private void updateDirectionAndSpeed(BufferedImage collisionMap, int panelW, int panelH) {
+        // Update stored collision map and dimensions
+        if (collisionMap != null) {
+            this.currentCollisionMap = collisionMap;
+            this.currentPanelW = panelW;
+            this.currentPanelH = panelH;
+        }
+        
         boolean w = keysPressed.contains(KeyEvent.VK_W);
         boolean a = keysPressed.contains(KeyEvent.VK_A);
         boolean s = keysPressed.contains(KeyEvent.VK_S);
         boolean d = keysPressed.contains(KeyEvent.VK_D);
         boolean shift = keysPressed.contains(KeyEvent.VK_SHIFT);
-
-        switch ((w ? 8 : 0) | (a ? 4 : 0) | (s ? 2 : 0) | (d ? 1 : 0) | (shift ? 16 : 0)) {
-            // Diagonal with shift (fast)
-            case 8 | 1 | 16: // W + D + Shift
-            dx = 10; dy = -10; arah = "kanan_atas"; break;
-            case 8 | 4 | 16: // W + A + Shift
-            dx = -10; dy = -10; arah = "kiri_atas"; break;
-            case 2 | 1 | 16: // S + D + Shift
-            dx = 10; dy = 10; arah = "kanan_bawah"; break;
-            case 2 | 4 | 16: // S + A + Shift
-            dx = -10; dy = 10; arah = "kiri_bawah"; break;
-            // Cardinal with shift (fast)
-            case 8 | 16: // W + Shift
-            dx = 0; dy = -10; arah = "atas"; break;
-            case 2 | 16: // S + Shift
-            dx = 0; dy = 10; arah = "bawah"; break;
-            case 4 | 16: // A + Shift
-            dx = -10; dy = 0; arah = "kiri"; break;
-            case 1 | 16: // D + Shift
-            dx = 10; dy = 0; arah = "kanan"; break;
-            // Diagonal (normal)
-            case 8 | 1: // W + D
-            dx = 5; dy = -5; arah = "kanan_atas"; break;
-            case 8 | 4: // W + A
-            dx = -5; dy = -5; arah = "kiri_atas"; break;
-            case 2 | 1: // S + D
-            dx = 5; dy = 5; arah = "kanan_bawah"; break;
-            case 2 | 4: // S + A
-            dx = -5; dy = 5; arah = "kiri_bawah"; break;
-            // Cardinal (normal)
-            case 8: // W
-            dx = 0; dy = -5; arah = "atas"; break;
-            case 2: // S
-            dx = 0; dy = 5; arah = "bawah"; break;
-            case 4: // A
-            dx = -5; dy = 0; arah = "kiri"; break;
-            case 1: // D
-            dx = 5; dy = 0; arah = "kanan"; break;
-            default:
-            break;
-        }
-
-        System.out.println("walking");
-
-        if (isWalkable(x + dx + width / 2, y + dy + height / 2, collisionMap, panelW, panelH)) {
-            x += dx;
-            y += dy;
+        
+        // Determine current speed based on shift key
+        float currentMoveSpeed = shift ? moveSpeedFast : moveSpeedNormal;
+        
+        // Calculate direction
+        float dirX = 0;
+        float dirY = 0;
+        
+        if (d) dirX += 1;
+        if (a) dirX -= 1;
+        if (s) dirY += 1;
+        if (w) dirY -= 1;
+        
+        // Normalize diagonal movement
+        if (dirX != 0 && dirY != 0) {
+            float normalizer = (float)(1.0 / Math.sqrt(2));
+            dirX *= normalizer;
+            dirY *= normalizer;
         }
         
-        // Check if player is in hiding area after movement
-        inHidingArea = isInHidingArea(x + width / 2, y + height / 2, collisionMap, panelW, panelH);
-
-        if (!animTimer.isRunning()) animTimer.start();
+        // Update target speeds
+        maxSpeedX = dirX * currentMoveSpeed;
+        maxSpeedY = dirY * currentMoveSpeed;
+        
+        // Update moving flag
+        isMoving = dirX != 0 || dirY != 0;
+        
+        // Adjust current speed towards target speed (acceleration)
+        if (dirX != 0) {
+            if (Math.abs(currentSpeedX - maxSpeedX) > acceleration) {
+                currentSpeedX += (maxSpeedX > currentSpeedX) ? acceleration : -acceleration;
+            } else {
+                currentSpeedX = maxSpeedX;
+            }
+        } else {
+            // Apply deceleration when no direction pressed
+            if (currentSpeedX > 0) {
+                currentSpeedX = Math.max(0, currentSpeedX - deceleration);
+            } else if (currentSpeedX < 0) {
+                currentSpeedX = Math.min(0, currentSpeedX + deceleration);
+            }
+        }
+        
+        if (dirY != 0) {
+            if (Math.abs(currentSpeedY - maxSpeedY) > acceleration) {
+                currentSpeedY += (maxSpeedY > currentSpeedY) ? acceleration : -acceleration;
+            } else {
+                currentSpeedY = maxSpeedY;
+            }
+        } else {
+            // Apply deceleration when no direction pressed
+            if (currentSpeedY > 0) {
+                currentSpeedY = Math.max(0, currentSpeedY - deceleration);
+            } else if (currentSpeedY < 0) {
+                currentSpeedY = Math.min(0, currentSpeedY + deceleration);
+            }
+        }
+        
+        // Update character direction
+        updateCharacterDirection();
+    }
+    
+    private void updateCharacterDirection() {
+        // Calculate the angle of movement to determine character direction
+        if (currentSpeedX == 0 && currentSpeedY == 0) return;
+        
+        float angle = (float) Math.toDegrees(Math.atan2(currentSpeedY, currentSpeedX));
+        
+        // Convert angle to character direction
+        if (angle > -22.5 && angle <= 22.5) {
+            arah = "kanan";
+        } else if (angle > 22.5 && angle <= 67.5) {
+            arah = "kanan_bawah";
+        } else if (angle > 67.5 && angle <= 112.5) {
+            arah = "bawah";
+        } else if (angle > 112.5 && angle <= 157.5) {
+            arah = "kiri_bawah";
+        } else if (angle > 157.5 || angle <= -157.5) {
+            arah = "kiri";
+        } else if (angle > -157.5 && angle <= -112.5) {
+            arah = "kiri_atas";
+        } else if (angle > -112.5 && angle <= -67.5) {
+            arah = "atas";
+        } else if (angle > -67.5 && angle <= -22.5) {
+            arah = "kanan_atas";
+        }
     }
 
     public void setOnLevelComplete(Runnable callback) {
@@ -157,10 +285,17 @@ public class RobberyBob {
 
     public void handleKeyReleased(int keyCode) {
         keysPressed.remove(keyCode);
+        
+        // Update movement direction and speed when a key is released
+        if (keyCode == KeyEvent.VK_W || keyCode == KeyEvent.VK_A || 
+            keyCode == KeyEvent.VK_S || keyCode == KeyEvent.VK_D) {
+            updateDirectionAndSpeed(null, 0, 0);
+        }
+        
         if (keysPressed.isEmpty()) {
             isMoving = false;
             spriteIndex = 0;
-            animTimer.stop();
+            if (animTimer.isRunning()) animTimer.stop();
         }
     }
 
@@ -208,6 +343,11 @@ public class RobberyBob {
     }
 
     private boolean isWalkable(int px, int py, BufferedImage map, int panelW, int panelH) {
+        // If map isn't provided, return false to be safe
+        if (map == null) {
+            return false;
+        }
+        
         int imgW = map.getWidth();
         int imgH = map.getHeight();
         int scaledX = px * imgW / panelW;
@@ -239,6 +379,11 @@ public class RobberyBob {
 
     // Check if player is in green hiding area
     private boolean isInHidingArea(int px, int py, BufferedImage map, int panelW, int panelH) {
+        // If map isn't provided, return false to be safe
+        if (map == null) {
+            return false;
+        }
+        
         int imgW = map.getWidth();
         int imgH = map.getHeight();
         int scaledX = px * imgW / panelW;
