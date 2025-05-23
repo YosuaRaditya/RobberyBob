@@ -1,4 +1,3 @@
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -6,13 +5,13 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
+import javax.swing.*;
 
 public class HomePanel extends JPanel {
     
     private BufferedImage background;
     private BufferedImage arenaA, arenaB, arenaC, arenaD;
     private Rectangle arenaABox, arenaBBox, arenaCBox, arenaDBox;
-    private int gold = 100;
 
     private JFrame parentFrame;
 
@@ -66,7 +65,7 @@ public class HomePanel extends JPanel {
                 }
             }
         });
-    }
+    } 
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -80,7 +79,7 @@ public class HomePanel extends JPanel {
         // Gambar jumlah gold
         g.setColor(Color.black);
         g.setFont(new Font("Arial", Font.BOLD, 26));
-        g.drawString(" " + gold, 1060, 52);
+        g.drawString(" " + GameData.gold, 1060, 52);
 
         // Gambar arena
         if (arenaA != null) g.drawImage(arenaA, arenaABox.x, arenaABox.y, arenaABox.width, arenaABox.height, null);
