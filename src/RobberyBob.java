@@ -12,8 +12,8 @@ import javax.swing.*;
 public class RobberyBob {
     private BufferedImage[] sprites = new BufferedImage[16];
     private int spriteIndex = 0;
-    private int x, y;
-    private int width = 200, height = 200;
+    public int x, y;
+    public int width = 200, height = 200;
     private String arah = "kanan";
     private boolean isMoving = false;
     private Set<Integer> keysPressed = new HashSet<>();
@@ -25,7 +25,7 @@ public class RobberyBob {
 
         try {
             for (int i = 0; i < 16; i++) {
-                sprites[i] = ImageIO.read(new File("RobberyBob/Assets/jalan" + i + ".png"));
+                sprites[i] = ImageIO.read(new File("Assets/jalan" + i + ".png"));
             }
         } catch (IOException e) {
             System.out.println("Error loading sprites: " + e.getMessage());

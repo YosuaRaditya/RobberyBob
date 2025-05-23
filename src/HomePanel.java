@@ -1,4 +1,3 @@
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -6,6 +5,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
+import javax.swing.*;
 
 public class HomePanel extends JPanel {
     
@@ -20,11 +20,11 @@ public class HomePanel extends JPanel {
         this.parentFrame = frame;
 
         try {
-            background = ImageIO.read(new File("RobberyBob/Assets/bgHome.png"));
-            arenaA = ImageIO.read(new File("RobberyBob/Assets/arenaA.png"));
-            arenaB = ImageIO.read(new File("RobberyBob/Assets/arenaB.png"));
-            arenaC = ImageIO.read(new File("RobberyBob/Assets/arenaC.png"));
-            arenaD = ImageIO.read(new File("RobberyBob/Assets/arenaD.png"));
+            background = ImageIO.read(new File("Assets/bgHome.png"));
+            arenaA = ImageIO.read(new File("Assets/arenaA.png"));
+            arenaB = ImageIO.read(new File("Assets/arenaB.png"));
+            arenaC = ImageIO.read(new File("Assets/arenaC.png"));
+            arenaD = ImageIO.read(new File("Assets/arenaD.png"));
         } catch (IOException e) {
             System.out.println("Gagal memuat gambar: " + e.getMessage());
             e.printStackTrace();
