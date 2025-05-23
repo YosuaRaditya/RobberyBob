@@ -20,6 +20,8 @@ public class RobberyBob {
     private boolean isMoving = false;
     private Set<Integer> keysPressed = new HashSet<>();
     private Timer animTimer;
+    private boolean hasExtraItem = false; // Tambahkan ini
+    private Runnable onLevelComplete; // Callback untuk level selesai
 
     public RobberyBob(int startX, int startY) {
         this.x = startX;
@@ -88,6 +90,10 @@ public class RobberyBob {
         if (!animTimer.isRunning()) animTimer.start();
     }
 
+    public void setOnLevelComplete(Runnable callback) {
+        this.onLevelComplete = callback;
+    }
+
     public void handleKeyReleased(int keyCode) {
         keysPressed.remove(keyCode);
         if (keysPressed.isEmpty()) {
@@ -137,7 +143,15 @@ public class RobberyBob {
         }
 
         Color color = new Color(map.getRGB(scaledX, scaledY));
-        return color.getRed() > 200 && color.getGreen() > 200 && color.getBlue() > 200;
+        // Kriteria untuk merah muda (233, 73, 75):
+        if (color.getRed() > 220 && color.getGreen() < 80 && color.getBlue() < 80) {
+            if (hasExtraItem()) {
+                System.out.println("Mantap"); // Muncul hanya jika bawa item Extra
+            }
+            return false; // Blokir pergerakan
+        }
+
+        return color.getRed() > 200 && color.getGreen() > 200 && color.getBlue() > 200; // Walkable jika putih
     }
 
     public Rectangle getBounds() {
@@ -161,6 +175,15 @@ public class RobberyBob {
         g2d.setColor(new Color(255, 255, 0, 100)); // Kuning transparan
         g2d.fillOval(centerX - radius, centerY - radius, diameter, diameter);
         g2d.dispose();
+    }
+
+    public void setHasExtraItem(boolean status) {
+        this.hasExtraItem = status;
+    }
+
+    // Method untuk cek status
+    public boolean hasExtraItem() {
+        return hasExtraItem;
     }
 
 }

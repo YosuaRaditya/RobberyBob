@@ -5,7 +5,7 @@ import java.awt.image.BufferedImage;
 
 public class Kalung extends Item {
     public Kalung(int x, int y) {
-        super(x, y, 40, 40, 50, loadImage(), "cahaya"); // shine kuning
+        super(x, y, 40, 40, 50, loadImage(), "cahaya", "Biasa"); // shine kuning
     }
 
     private static BufferedImage loadImage() {

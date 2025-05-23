@@ -12,6 +12,9 @@ public class Arena extends JPanel {
     protected JButton backButton;
     protected RobberyBob bob;
     protected List<Item> itemList;
+    protected JButton pauseButton;  
+    protected boolean isPaused = false;
+    private PauseMenuPanel pauseMenuPanel;  
 
     public Arena(String mapPath, String collisionPath, int startX, int startY, JFrame parentFrame, List<Item> itemList) {
         this.itemList = itemList;
@@ -26,16 +29,6 @@ public class Arena extends JPanel {
         }
 
         bob = new RobberyBob(startX, startY);
-
-        backButton = new JButton("Back");
-        backButton.setBounds(30, 30, 100, 40);
-        backButton.addActionListener(e -> {
-            parentFrame.setContentPane(new HomePanel(parentFrame));
-            parentFrame.revalidate();
-            parentFrame.repaint();
-        });
-        add(backButton);
-
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -60,6 +53,74 @@ public class Arena extends JPanel {
         });
         shineTimer.start();
         requestFocusInWindow();
+
+        initPauseButton(parentFrame);
+    }
+
+    private void initPauseButton(JFrame parentFrame) {
+        try {
+            pauseButton = new JButton();
+            pauseButton.setBounds(20, 20, 60, 60);
+            pauseButton.setContentAreaFilled(false);
+            pauseButton.setBorderPainted(false);
+            pauseButton.setFocusable(false);
+            pauseButton.addActionListener(e -> togglePause(parentFrame));
+            
+            // Set ikon awal
+            updatePauseButtonIcon();
+            
+            add(pauseButton);
+        } catch (Exception e) {
+            System.out.println("Gagal inisialisasi pause button: " + e.getMessage());
+        }
+    }
+
+    private void togglePause(JFrame parentFrame) {
+        isPaused = !isPaused;
+        
+        // Update ikon tombol
+        updatePauseButtonIcon();
+        
+        if (isPaused) {
+            showPauseMenu(parentFrame);
+        } else {
+            resumeGame();
+        }
+    }
+
+    private void updatePauseButtonIcon() {
+        try {
+            String iconPath = isPaused ? "RobberyBob/Assets/pauseIcon.png" : "RobberyBob/Assets/playIcon.png";
+            BufferedImage originalImage = ImageIO.read(new File(iconPath));
+            int newWidth = 60;
+            int newHeight = 60;
+            Image scaledImage = originalImage.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+            
+            pauseButton.setIcon(new ImageIcon(scaledImage));
+        } catch (IOException e) {
+            System.out.println("Gagal load pause/play icon: " + e.getMessage());
+        }
+    }
+
+    private void showPauseMenu(JFrame parentFrame) {
+        // Buat pause menu jika belum ada
+        if (pauseMenuPanel == null) {
+            pauseMenuPanel = new PauseMenuPanel(parentFrame, this);
+            pauseMenuPanel.setBounds(0, 0, getWidth(), getHeight());
+        }
+        
+        add(pauseMenuPanel, JLayeredPane.POPUP_LAYER);
+        pauseMenuPanel.setVisible(true);
+        repaint();
+    }
+
+    private void resumeGame() {
+        if (pauseMenuPanel != null) {
+            pauseMenuPanel.setVisible(false);
+            remove(pauseMenuPanel);
+        }
+        requestFocus(); // Kembalikan fokus ke game
+        repaint();
     }
 
     @Override
@@ -70,25 +131,27 @@ public class Arena extends JPanel {
             g.drawImage(mapImage, 0, 0, getWidth(), getHeight(), null);
         }
 
-        // Gambar barang (kotak merah)
+        // Gambar barang
         for (Item item : itemList) {
             item.draw(g, this);
         }
 
-
         // Gambar RobberyBob
         bob.draw(g, this);
 
-        // Gambar area deteksi (lingkaran kuning transparan)
-        bob.drawDetectionArea(g);
-
-        // Cek apakah ada barang yang masuk area lingkaran
+        // Cek collision dengan item
         for (int i = 0; i < itemList.size(); i++) {
             Item item = itemList.get(i);
             if (bob.getDetectionCircle().intersects(item.getBounds())) {
                 GameData.gold += item.getGoldValue();
+                
+                // Tambahkan pengecekan jenis item di sini
+                if ("Extra".equals(item.getJenis())) {
+                    bob.setHasExtraItem(true); // Tandai bahwa Extra item diambil
+                }
+                
                 itemList.remove(i);
-                i--; // supaya gak skip item selanjutnya
+                i--; // Adjust index setelah remove
             }
         }
     }

@@ -5,8 +5,8 @@ import java.awt.image.BufferedImage;
 
 public class Emas extends Item {
     public Emas(int x, int y) {
-        super(x, y, 40, 40, 50, loadImage(), "cahaya"); // shine kuning
-    }
+        super(x, y, 40, 40, 50, loadImage(), "cahaya", "Biasa"); // shine kuning
+    } 
 
     private static BufferedImage loadImage() {
         try {

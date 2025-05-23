@@ -8,13 +8,14 @@ import java.io.IOException;
 public abstract class Item {
     protected int x, y, width, height;
     protected int goldValue;
+    protected String jenis;
     protected BufferedImage image;
 
     protected BufferedImage[] shineFrames = new BufferedImage[9]; // Sprite berkilau
     protected int frameIndex = 0;
     protected int updateCounter = 0;
 
-    public Item(int x, int y, int width, int height, int goldValue, BufferedImage image, String shinePrefix) {
+    public Item(int x, int y, int width, int height, int goldValue, BufferedImage image, String shinePrefix, String jenis) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -22,6 +23,7 @@ public abstract class Item {
         this.goldValue = goldValue;
         this.image = image;
         loadShineFrames(shinePrefix); // gunakan prefix sesuai item
+        this.jenis = jenis;
     }
 
 
@@ -62,6 +64,14 @@ public abstract class Item {
                 System.out.println("Gagal load shine frame " + prefix + i + ": " + e.getMessage());
             }
         }
+    }
+
+    public String getJenis() {
+        return jenis;
+    }
+
+    public void setJenis(String jenis) {
+        this.jenis = jenis;
     }
 
 }
