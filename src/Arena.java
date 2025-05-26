@@ -168,6 +168,15 @@ public class Arena extends JPanel {
             g.setColor(Color.GREEN);
             g.drawString("Press 'I' to hide/unhide", 10, 40);
         }
+        
+        // Draw stamina bar
+        bob.drawStaminaBar(g);
+        
+        // Running indicator
+        if (bob.isRunning()) {
+            g.setColor(Color.WHITE);
+            g.drawString("RUNNING", 230, 82);
+        }
 
         // Cek collision dengan item - only when not hiding
         if (!bob.isHiding()) {

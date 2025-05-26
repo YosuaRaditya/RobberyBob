@@ -34,6 +34,14 @@ public class RobberyBob {
     private Runnable onLevelComplete;
     private int visibilityRadius = 150;
     
+    // Stamina system variables
+    private float maxStamina = 100.0f;
+    private float currentStamina = 100.0f;
+    private float staminaDrainRate = 0.5f; // How fast stamina drains when running
+    private float staminaRegenRate = 0.2f; // How fast stamina regenerates
+    private boolean isRunning = false; // Track if player is running
+    private Timer staminaTimer; // Timer to handle stamina changes
+    
     // Movement smoothing variables
     private float moveSpeedNormal = 2.5f;
     private float moveSpeedFast = 5.0f;
@@ -92,6 +100,29 @@ public class RobberyBob {
             updateMovement();
         });
         movementTimer.start();
+        
+        // Create stamina timer to handle regeneration/drain
+        staminaTimer = new Timer(50, e -> { // Update stamina every 50ms
+            updateStamina();
+        });
+        staminaTimer.start();
+    }
+    
+    // Manage stamina regeneration and drain
+    private void updateStamina() {
+        // Drain stamina when running
+        if (isRunning && isMoving) {
+            currentStamina = Math.max(0, currentStamina - staminaDrainRate);
+        } 
+        // Regenerate stamina when not running
+        else if (!isRunning && currentStamina < maxStamina) {
+            currentStamina = Math.min(maxStamina, currentStamina + staminaRegenRate);
+        }
+    }
+    
+    // Get current stamina percentage for display
+    public float getStaminaPercentage() {
+        return (currentStamina / maxStamina) * 100;
     }
 
     // Update player position based on current speed
@@ -192,8 +223,11 @@ public class RobberyBob {
         boolean d = keysPressed.contains(KeyEvent.VK_D);
         boolean shift = keysPressed.contains(KeyEvent.VK_SHIFT);
         
-        // Determine current speed based on shift key
-        float currentMoveSpeed = shift ? moveSpeedFast : moveSpeedNormal;
+        // Check if player wants to run and has enough stamina
+        isRunning = shift && currentStamina > 0;
+        
+        // Determine current speed based on running state
+        float currentMoveSpeed = isRunning ? moveSpeedFast : moveSpeedNormal;
         
         // Calculate direction
         float dirX = 0;
@@ -251,6 +285,57 @@ public class RobberyBob {
         
         // Update character direction
         updateCharacterDirection();
+    }
+    
+    // Check if player is currently running
+    public boolean isRunning() {
+        return isRunning && isMoving;
+    }
+
+    // Get current stamina value
+    public float getCurrentStamina() {
+        return currentStamina;
+    }
+
+    // Get max stamina value
+    public float getMaxStamina() {
+        return maxStamina;
+    }
+    
+    // Draw stamina bar
+    public void drawStaminaBar(Graphics g) {
+        int barWidth = 200;
+        int barHeight = 15;
+        int x = 20;
+        int y = 70;
+        
+        // Draw outline
+        g.setColor(Color.BLACK);
+        g.fillRect(x-2, y-2, barWidth+4, barHeight+4);
+        
+        // Draw background
+        g.setColor(Color.GRAY);
+        g.fillRect(x, y, barWidth, barHeight);
+        
+        // Calculate filled portion
+        int filledWidth = (int)((currentStamina / maxStamina) * barWidth);
+        
+        // Choose color based on stamina level
+        if (currentStamina > 70) {
+            g.setColor(Color.GREEN);
+        } else if (currentStamina > 30) {
+            g.setColor(Color.YELLOW);
+        } else {
+            g.setColor(Color.RED);
+        }
+        
+        // Draw filled portion
+        g.fillRect(x, y, filledWidth, barHeight);
+        
+        // Draw text label
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 12));
+        g.drawString("STAMINA", x + 5, y + barHeight - 3);
     }
     
     private void updateCharacterDirection() {
