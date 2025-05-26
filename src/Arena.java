@@ -9,7 +9,6 @@ import javax.imageio.ImageIO;
 
 public class Arena extends JPanel {
     protected BufferedImage mapImage, collisionMap;
-    protected JButton backButton;
     protected RobberyBob bob;
     protected List<Item> itemList;
     protected JButton pauseButton;  
@@ -143,16 +142,23 @@ public class Arena extends JPanel {
         for (int i = 0; i < itemList.size(); i++) {
             Item item = itemList.get(i);
             if (bob.getDetectionCircle().intersects(item.getBounds())) {
-                GameData.gold += item.getGoldValue();
-                
-                // Tambahkan pengecekan jenis item di sini
+                bob.addPendingGold(item.getGoldValue()); // Tambahin, bukan set ulang
+
                 if ("Extra".equals(item.getJenis())) {
-                    bob.setHasExtraItem(true); // Tandai bahwa Extra item diambil
+                    bob.setHasExtraItem(true);
                 }
-                
-                itemList.remove(i);
-                i--; // Adjust index setelah remove
+                itemList.remove(i); // HAPUS item-nya langsung
+                i--;
             }
+        }
+
+        if (bob.hasNambahGold() && bob.hasPendingGold()) {
+            GameData.gold += bob.getPendingGold();
+            System.out.println("Gold ditambah: " + bob.getPendingGold());
+
+            bob.setHasExtraItem(false);
+            bob.setHasNambahGold(false);
+            bob.resetPendingGold(); // Tambahkan ini biar gak terus nambah
         }
     }
 }
