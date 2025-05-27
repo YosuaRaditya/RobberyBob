@@ -21,9 +21,14 @@ public class RobberyBob {
     private Set<Integer> keysPressed = new HashSet<>();
     private Timer animTimer;
     private boolean hasExtraItem = false; // Tambahkan ini
-    private boolean hasNambahGold = false; // Tambahkan ini
+    
     private int pendingGold = 0;
-    private Runnable onLevelComplete; // Callback untuk level selesai
+    private Runnable onFinish; // Tambahkan ini
+
+    public void setOnFinish(Runnable onFinish) {
+        this.onFinish = onFinish;
+    }
+    
 
     public RobberyBob(int startX, int startY) {
         this.x = startX;
@@ -92,9 +97,6 @@ public class RobberyBob {
         if (!animTimer.isRunning()) animTimer.start();
     }
 
-    public void setOnLevelComplete(Runnable callback) {
-        this.onLevelComplete = callback;
-    }
 
     public void handleKeyReleased(int keyCode) {
         keysPressed.remove(keyCode);
@@ -147,9 +149,9 @@ public class RobberyBob {
         Color color = new Color(map.getRGB(scaledX, scaledY));
         // Kriteria untuk merah muda (233, 73, 75):
         if (color.getRed() > 220 && color.getGreen() < 80 && color.getBlue() < 80) {
-            if (hasExtraItem() && !hasNambahGold) {
+            if (hasExtraItem()) {
                 System.out.println("Mantap");
-                hasNambahGold = true;
+                if (onFinish != null) onFinish.run(); // <-- GANTI DENGAN INI
             }
             return false;
         }
@@ -186,15 +188,6 @@ public class RobberyBob {
     // Method untuk cek status
     public boolean hasExtraItem() {
         return hasExtraItem;
-    }
-
-    public void setHasNambahGold(boolean status) {
-        this.hasNambahGold = status;
-    }
-
-    // Method untuk cek status
-    public boolean hasNambahGold() {
-        return hasNambahGold;
     }
 
     public void setPendingGold(int gold) {

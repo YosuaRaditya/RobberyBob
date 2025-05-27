@@ -13,10 +13,56 @@ public class Arena extends JPanel {
     protected List<Item> itemList;
     protected JButton pauseButton;  
     protected boolean isPaused = false;
-    private PauseMenuPanel pauseMenuPanel;  
+    private PauseMenuPanel pauseMenuPanel;
+    private Timer gameTimer;
+    private int elapsedSeconds = 0;
+    private boolean isTimerRunning = false; 
+
+    private int totalItemCount = 0;
+    private int collectedItemCount = 0;
+    private int goldCollectedThisArena = 0;
+
+    public int getElapsedSeconds() {
+        return elapsedSeconds;
+    }
+
+    public void startTimer() {
+        if (gameTimer == null) {
+            gameTimer = new Timer(1000, e -> {
+                elapsedSeconds++;
+                repaint();
+            });
+        }
+        if (!isTimerRunning) {
+            gameTimer.start();
+            isTimerRunning = true;
+        }
+    }
+
+    public void pauseTimer() {
+        if (gameTimer != null && isTimerRunning) {
+            gameTimer.stop();
+            isTimerRunning = false;
+        }
+    }
+
+    public void resumeTimer() {
+        if (gameTimer != null && !isTimerRunning) {
+            gameTimer.start();
+            isTimerRunning = true;
+        }
+    }
+
+    public void stopTimer() {
+        if (gameTimer != null) {
+            gameTimer.stop();
+            isTimerRunning = false;
+        }
+    }
 
     public Arena(String mapPath, String collisionPath, int startX, int startY, JFrame parentFrame, List<Item> itemList) {
         this.itemList = itemList;
+        this.totalItemCount = itemList.size();
 
         setLayout(null);
 
@@ -28,6 +74,19 @@ public class Arena extends JPanel {
         }
 
         bob = new RobberyBob(startX, startY);
+        startTimer();
+
+        bob.setOnFinish(() -> {
+            GameData.gold += goldCollectedThisArena; // gunakan goldCollectedThisArena
+            stopTimer();
+            SwingUtilities.invokeLater(() -> {
+                FinishMenuPanel finishPanel = new FinishMenuPanel(parentFrame, this);
+                finishPanel.setBounds(0, 0, getWidth(), getHeight());
+                parentFrame.setContentPane(finishPanel);
+                parentFrame.revalidate();
+                parentFrame.repaint();
+            });
+        });
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -107,6 +166,8 @@ public class Arena extends JPanel {
             pauseMenuPanel = new PauseMenuPanel(parentFrame, this);
             pauseMenuPanel.setBounds(0, 0, getWidth(), getHeight());
         }
+
+        pauseTimer();
         
         add(pauseMenuPanel, JLayeredPane.POPUP_LAYER);
         pauseMenuPanel.setVisible(true);
@@ -118,6 +179,7 @@ public class Arena extends JPanel {
             pauseMenuPanel.setVisible(false);
             remove(pauseMenuPanel);
         }
+        resumeTimer();
         requestFocus(); // Kembalikan fokus ke game
         repaint();
     }
@@ -142,23 +204,25 @@ public class Arena extends JPanel {
         for (int i = 0; i < itemList.size(); i++) {
             Item item = itemList.get(i);
             if (bob.getDetectionCircle().intersects(item.getBounds())) {
-                bob.addPendingGold(item.getGoldValue()); // Tambahin, bukan set ulang
-
                 if ("Extra".equals(item.getJenis())) {
                     bob.setHasExtraItem(true);
                 }
+                // Tambahkan update counter di sini:
+                collectedItemCount++;
+                goldCollectedThisArena += item.getGoldValue();
                 itemList.remove(i); // HAPUS item-nya langsung
                 i--;
             }
         }
+    }
 
-        if (bob.hasNambahGold() && bob.hasPendingGold()) {
-            GameData.gold += bob.getPendingGold();
-            System.out.println("Gold ditambah: " + bob.getPendingGold());
-
-            bob.setHasExtraItem(false);
-            bob.setHasNambahGold(false);
-            bob.resetPendingGold(); // Tambahkan ini biar gak terus nambah
-        }
+    public int getTotalItemCount() {
+        return totalItemCount; // simpan jumlah item awal di field ini
+    }
+    public int getCollectedItemCount() {
+        return collectedItemCount; // simpan jumlah item yang sudah diambil di field ini
+    }
+    public int getGoldCollectedThisArena() {
+        return goldCollectedThisArena; // simpan gold yang didapat di arena ini
     }
 }
