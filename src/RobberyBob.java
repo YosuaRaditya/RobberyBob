@@ -31,9 +31,12 @@ public class RobberyBob {
     private Timer smokeTimer;
     private Timer movementTimer;
     private boolean hasExtraItem = false;
+
     private Runnable onLevelComplete;
+    private Runnable onFinish;
+
     private int visibilityRadius = 150;
-    
+
     // Stamina system variables
     private float maxStamina = 100.0f;
     private float currentStamina = 100.0f;
@@ -41,7 +44,7 @@ public class RobberyBob {
     private float staminaRegenRate = 0.2f; // How fast stamina regenerates
     private boolean isRunning = false; // Track if player is running
     private Timer staminaTimer; // Timer to handle stamina changes
-    
+
     // Movement smoothing variables
     private float moveSpeedNormal = 2.5f;
     private float moveSpeedFast = 5.0f;
@@ -57,6 +60,13 @@ public class RobberyBob {
     private BufferedImage currentCollisionMap;
     private int currentPanelW;
     private int currentPanelH;
+
+    private int pendingGold = 0;
+
+    public void setOnFinish(Runnable onFinish) {
+        this.onFinish = onFinish;
+    }
+
 
     public RobberyBob(int startX, int startY) {
         this.x = startX;
@@ -403,9 +413,6 @@ public class RobberyBob {
         }
     }
 
-    public void setOnLevelComplete(Runnable callback) {
-        this.onLevelComplete = callback;
-    }
 
     public void handleKeyReleased(int keyCode) {
         keysPressed.remove(keyCode);
@@ -486,9 +493,10 @@ public class RobberyBob {
         // Kriteria untuk merah muda (233, 73, 75):
         if (color.getRed() > 220 && color.getGreen() < 80 && color.getBlue() < 80) {
             if (hasExtraItem()) {
-                System.out.println("Mantap"); // Muncul hanya jika bawa item Extra
+                System.out.println("Mantap");
+                if (onFinish != null) onFinish.run();
             }
-            return false; // Blokir pergerakan
+            return false;
         }
 
         // Allow walking on white areas (RGB all > 200)
@@ -522,6 +530,7 @@ public class RobberyBob {
         // Detect green area (high green, low red and blue)
         return color.getGreen() > 200 && color.getRed() < 100 && color.getBlue() < 100;
     }
+
 
     public Rectangle getBounds() {
         return new Rectangle(x, y, width, height);
@@ -609,5 +618,30 @@ public class RobberyBob {
     
     public boolean isInHidingArea() {
         return inHidingArea;
+    }
+
+
+    public void setPendingGold(int gold) {
+        this.pendingGold = gold;
+    }
+
+    public int getPendingGold() {
+        return this.pendingGold;
+    }
+
+    public boolean hasPendingGold() {
+        return this.pendingGold > 0;
+    }
+
+    public void clearPendingGold() {
+        this.pendingGold = 0;
+    }
+
+    public void addPendingGold(int value) {
+        this.pendingGold += value;
+    }
+
+    public void resetPendingGold() {
+        this.pendingGold = 0;
     }
 }
