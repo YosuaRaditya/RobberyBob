@@ -186,11 +186,10 @@ public class RobberyBob {
         this.currentPanelH = panelH;
         
         keysPressed.add(keyCode);
-        
         // Toggle hiding state when 'I' is pressed and in hiding area
         if (keyCode == KeyEvent.VK_I && inHidingArea) {
             isHiding = !isHiding;
-            
+
             // Start smoke animation when changing hiding state
             smokeIndex = 0; // Reset to start of animation
             isPlayingSmoke = true; // Mark that we're playing the animation
@@ -199,6 +198,46 @@ public class RobberyBob {
             }
             return;
         }
+
+        // Movement logic
+        isMoving = true;
+
+        int dx = 0, dy = 0;
+
+        if (keysPressed.contains(KeyEvent.VK_W) && keysPressed.contains(KeyEvent.VK_D) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = 10; dy = -10; arah = "kanan_atas";
+        } else if (keysPressed.contains(KeyEvent.VK_W) && keysPressed.contains(KeyEvent.VK_A) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = -10; dy = -10; arah = "kiri_atas";
+        } else if (keysPressed.contains(KeyEvent.VK_S) && keysPressed.contains(KeyEvent.VK_D) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = 10; dy = 10; arah = "kanan_bawah";
+        } else if (keysPressed.contains(KeyEvent.VK_S) && keysPressed.contains(KeyEvent.VK_A) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = -10; dy = 10; arah = "kiri_bawah";
+        } else if (keysPressed.contains(KeyEvent.VK_W) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = 0; dy = -10; arah = "atas";
+        } else if (keysPressed.contains(KeyEvent.VK_S) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = 0; dy = 10; arah = "bawah";
+        } else if (keysPressed.contains(KeyEvent.VK_A) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = -10; dy = 0; arah = "kiri";
+        } else if (keysPressed.contains(KeyEvent.VK_D) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = 10; dy = 0; arah = "kanan";
+        } else if (keysPressed.contains(KeyEvent.VK_W) && keysPressed.contains(KeyEvent.VK_D)) {
+            dx = 5; dy = -5; arah = "kanan_atas";
+        } else if (keysPressed.contains(KeyEvent.VK_W) && keysPressed.contains(KeyEvent.VK_A)) {
+            dx = -5; dy = -5; arah = "kiri_atas";
+        } else if (keysPressed.contains(KeyEvent.VK_S) && keysPressed.contains(KeyEvent.VK_D)) {
+            dx = 5; dy = 5; arah = "kanan_bawah";
+        } else if (keysPressed.contains(KeyEvent.VK_S) && keysPressed.contains(KeyEvent.VK_A)) {
+            dx = -5; dy = 5; arah = "kiri_bawah";
+        } else if (keysPressed.contains(KeyEvent.VK_W)) {
+            dx = 0; dy = -5; arah = "atas";
+        } else if (keysPressed.contains(KeyEvent.VK_S)) {
+            dx = 0; dy = 5; arah = "bawah";
+        } else if (keysPressed.contains(KeyEvent.VK_A)) {
+            dx = -5; dy = 0; arah = "kiri";
+        } else if (keysPressed.contains(KeyEvent.VK_D)) {
+            dx = 5; dy = 0; arah = "kanan";
+        }
+
         
         // Don't move if hiding
         if (isHiding) {
