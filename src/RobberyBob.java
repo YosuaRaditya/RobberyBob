@@ -31,6 +31,7 @@ public class RobberyBob {
     private Timer smokeTimer;
     private Timer movementTimer;
     private boolean hasExtraItem = false;
+    private boolean hasFinished = false;
 
     private Runnable onLevelComplete;
     private Runnable onFinish;
@@ -476,7 +477,7 @@ public class RobberyBob {
     private boolean isWalkable(int px, int py, BufferedImage map, int panelW, int panelH) {
         // If map isn't provided, return false to be safe
         if (map == null) {
-            return false;
+            return false; 
         }
         
         int imgW = map.getWidth();
@@ -492,7 +493,8 @@ public class RobberyBob {
         
         // Kriteria untuk merah muda (233, 73, 75):
         if (color.getRed() > 220 && color.getGreen() < 80 && color.getBlue() < 80) {
-            if (hasExtraItem()) {
+            if (hasExtraItem() && !hasFinished) { // <-- tambahkan !hasFinished
+                hasFinished = true;               // <-- set sudah finish
                 System.out.println("Mantap");
                 if (onFinish != null) onFinish.run();
             }
@@ -619,7 +621,6 @@ public class RobberyBob {
     public boolean isInHidingArea() {
         return inHidingArea;
     }
-
 
     public void setPendingGold(int gold) {
         this.pendingGold = gold;

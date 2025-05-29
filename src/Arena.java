@@ -250,11 +250,10 @@ public class Arena extends JPanel {
                     if ("Extra".equals(item.getJenis())) {
                         bob.setHasExtraItem(true);
                     }
-                    // Tambahkan update counter di sini:
                     collectedItemCount++;
                     goldCollectedThisArena += item.getGoldValue();
-                    itemList.remove(i); // HAPUS item-nya langsung
-                    i--;
+                    itemList.remove(i);
+                    break; // <-- tambahkan ini!
                 }
             }
         }
