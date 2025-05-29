@@ -243,20 +243,21 @@ public class Arena extends JPanel {
 
         // Cek collision dengan item - hanya saat tidak bersembunyi
         if (!bob.isHiding()) {
-            for (int i = 0; i < itemList.size(); i++) {
-                Item item = itemList.get(i);
-                if (bob.getDetectionCircle().intersects(item.getBounds())) {
-                    collectedItemCount++;
-                    goldCollectedThisArena += item.getGoldValue();
-
-                    if ("Extra".equals(item.getJenis())) {
-                        bob.setHasExtraItem(true); // Tandai bahwa Extra item diambil
-                    }
-
-                    itemList.remove(i);
-                    i--; // Adjust index setelah remove
+             // Cek collision dengan item
+        for (int i = 0; i < itemList.size(); i++) {
+            Item item = itemList.get(i);
+            if (bob.getDetectionCircle().intersects(item.getBounds())) {
+                if ("Extra".equals(item.getJenis())) {
+                    bob.setHasExtraItem(true);
                 }
+                // Tambahkan update counter di sini:
+                collectedItemCount++;
+                goldCollectedThisArena += item.getGoldValue();
+                itemList.remove(i); // HAPUS item-nya langsung
+                i--;
             }
+        }
+
         }
     }
 
