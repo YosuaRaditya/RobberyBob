@@ -3,6 +3,7 @@ import java.util.List;
 import javax.swing.JFrame;
 
 public class ArenaA extends Arena {
+
     public ArenaA(JFrame parentFrame) {
         super( 
             "RobberyBob/Assets/mapArenaA.jpg", 
