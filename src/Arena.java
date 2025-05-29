@@ -246,7 +246,6 @@ public class Arena extends JPanel {
             for (int i = 0; i < itemList.size(); i++) {
                 Item item = itemList.get(i);
                 if (bob.getDetectionCircle().intersects(item.getBounds())) {
-                    GameData.gold += item.getGoldValue();
                     collectedItemCount++;
                     goldCollectedThisArena += item.getGoldValue();
 
