@@ -20,10 +20,8 @@ public class Arena extends JPanel {
     protected List<CCTV> cctvs = new ArrayList<>();
     protected List<Double> cctvAngles = new ArrayList<>();
     protected List<Boolean> cctvRights = new ArrayList<>();
-    protected List<Polisi> polisis = new ArrayList<>();
-    protected List<int[][]> polisiPatrolPointsList = new ArrayList<>();
-    protected List<Integer> polisiTargetIndices = new ArrayList<>();
-    protected List<Integer> polisiSpeeds = new ArrayList<>();
+
+    protected List<Penjaga> penjagaList = new ArrayList<>();
 
     private Timer gameTimer;
     private int elapsedSeconds = 0;
@@ -139,7 +137,7 @@ public class Arena extends JPanel {
         requestFocusInWindow(); 
 
         initPauseButton(parentFrame);
-        setupCCTVandPolisi();
+        setupCCTVandPenjaga();
 
         Timer cctvTimer = new Timer(50, e -> {
             for (int i = 0; i < cctvs.size(); i++) {
@@ -161,38 +159,16 @@ public class Arena extends JPanel {
         });
         cctvTimer.start();
 
-        Timer polisiTimer = new Timer(20, e -> {
-            for (int i = 0; i < polisis.size(); i++) {
-                int[][] patrolPoints = polisiPatrolPointsList.get(i);
-                int targetIndex = polisiTargetIndices.get(i);
-                int speed = polisiSpeeds.get(i);
-                Polisi polisi = polisis.get(i);
-
-                int targetX = patrolPoints[targetIndex][0], targetY = patrolPoints[targetIndex][1];
-                int dx = targetX - polisi.getX(), dy = targetY - polisi.getY();
-                int dist = (int)Math.sqrt(dx * dx + dy * dy);
-                if (dist > speed) {
-                    polisi.setX(polisi.getX() + speed * dx / dist);
-                    polisi.setY(polisi.getY() + speed * dy / dist);
-                } else {
-                    polisi.setX(targetX);
-                    polisi.setY(targetY);
-                    int nextIndex = (targetIndex + 1) % patrolPoints.length;
-                    int nextX = patrolPoints[nextIndex][0];
-                    if (nextX < targetX) {
-                        polisi.setImage("RobberyBob/Assets/polisiKiri.png");
-                    } else if (nextX > targetX) {
-                        polisi.setImage("RobberyBob/Assets/polisiKanan.png");
-                    }
-                    polisiTargetIndices.set(i, nextIndex);
-                }
+        Timer penjagaTimer = new Timer(20, e -> {
+            for (Penjaga penjaga : penjagaList) {
+                penjaga.update();
             }
             repaint();
         });
-        polisiTimer.start();
+        penjagaTimer.start();
     }
 
-    protected void setupCCTVandPolisi() {
+    protected void setupCCTVandPenjaga() {
         // To be overridden by child class
     }
 
@@ -322,35 +298,35 @@ public class Arena extends JPanel {
             }
         }
 
+        for (Penjaga penjaga : penjagaList) {
+            penjaga.draw(g);
+        }
+
         // Draw CCTV vision cone
         for (int i = 0; i < cctvs.size(); i++) {
-        CCTV cctv = cctvs.get(i);
-        double angle = cctvAngles.get(i);
-        cctv.draw(g);
-        Graphics2D g2d = (Graphics2D) g.create();
-        int cctvx = cctv.getX() + cctv.getWidth() / 2;
-        int cctvy = cctv.getY() + cctv.getHeight() / 2;
-        int visionLength = 500;
-        double sudut = Math.toRadians(60);
-        int x1 = cctvx + (int)(visionLength * Math.cos(angle - sudut / 2));
-        int y1 = cctvy + (int)(visionLength * Math.sin(angle - sudut / 2));
-        int x2 = cctvx + (int)(visionLength * Math.cos(angle + sudut / 2));
-        int y2 = cctvy + (int)(visionLength * Math.sin(angle + sudut / 2));
-        int[] xPoints = {cctvx, x1, x2};
-        int[] yPoints = {cctvy, y1, y2};
-        int bobX = bob.x + bob.width / 2, bobY = bob.y + bob.height / 2;
-        boolean bobInCone = isPointInTriangle(bobX, bobY, xPoints, yPoints);
-        if (bobInCone) {
-            g2d.setColor(new Color(255, 0, 0, 80));
-        } else {
-            g2d.setColor(new Color(0, 225, 0, 80));
-        }
-        g2d.fillPolygon(xPoints, yPoints, 3);
-        g2d.dispose();
-    }
-
-        for (Polisi polisi : polisis) {
-            polisi.draw(g);
+            CCTV cctv = cctvs.get(i);
+            double angle = cctvAngles.get(i);
+            cctv.draw(g);
+            Graphics2D g2d = (Graphics2D) g.create();
+            int cctvx = cctv.getX() + cctv.getWidth() / 2;
+            int cctvy = cctv.getY() + cctv.getHeight() / 2;
+            int visionLength = 500;
+            double sudut = Math.toRadians(60);
+            int x1 = cctvx + (int)(visionLength * Math.cos(angle - sudut / 2));
+            int y1 = cctvy + (int)(visionLength * Math.sin(angle - sudut / 2));
+            int x2 = cctvx + (int)(visionLength * Math.cos(angle + sudut / 2));
+            int y2 = cctvy + (int)(visionLength * Math.sin(angle + sudut / 2));
+            int[] xPoints = {cctvx, x1, x2};
+            int[] yPoints = {cctvy, y1, y2};
+            int bobX = bob.x + bob.width / 2, bobY = bob.y + bob.height / 2;
+            boolean bobInCone = isPointInTriangle(bobX, bobY, xPoints, yPoints);
+            if (bobInCone) {
+                g2d.setColor(new Color(255, 0, 0, 80));
+            } else {
+                g2d.setColor(new Color(0, 225, 0, 80));
+            }
+            g2d.fillPolygon(xPoints, yPoints, 3);
+            g2d.dispose();
         }
     }
 

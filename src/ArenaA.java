@@ -15,21 +15,14 @@ public class ArenaA extends Arena {
     }
 
     @Override
-    protected void setupCCTVandPolisi() {
-        // Tambahkan CCTV
+    protected void setupCCTVandPenjaga() {
         cctvs.add(new CCTV(975, 64, 100, 64, "RobberyBob/Assets/cctv.png"));
         cctvAngles.add(Math.PI / 2);
         cctvRights.add(true);
 
-        // Tambahkan Polisi
-        int[][] patrolPoints = {
-            {487, 175},
-            {875, 175}
-        };
-        polisis.add(new Polisi(patrolPoints[0][0], patrolPoints[0][1], 100, 64, "RobberyBob/Assets/polisiKanan.png"));
-        polisiPatrolPointsList.add(patrolPoints);
-        polisiTargetIndices.add(1);
-        polisiSpeeds.add(2);
+        // Tambahkan polisi dengan patrol point
+        int[][] patrol = { {500, 170}, {700, 170}};
+        penjagaList.add(new Polisi(500, 170, 70, 70, "RobberyBob/Assets/polisi.png", patrol));
     }
 
     public static List<Item> getBarangArenaA() {

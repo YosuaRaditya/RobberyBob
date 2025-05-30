@@ -20,7 +20,7 @@ public class RobberyBob {
     // Use float for smoother movement
     private float xPos, yPos;   
     public int x, y;
-    public int width = 200, height = 200;
+    public int width = 170, height = 170;
     private String arah = "kanan";
     private boolean isMoving = false;
     private boolean isHiding = false;
