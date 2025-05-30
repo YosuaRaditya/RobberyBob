@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.util.ArrayList;
 
 public class Arena extends JPanel {
     protected BufferedImage mapImage, collisionMap;
@@ -15,6 +16,14 @@ public class Arena extends JPanel {
     protected boolean isPaused = false;
     private PauseMenuPanel pauseMenuPanel;
     private int mouseX = 0, mouseY = 0; // Track mouse position
+
+    protected List<CCTV> cctvs = new ArrayList<>();
+    protected List<Double> cctvAngles = new ArrayList<>();
+    protected List<Boolean> cctvRights = new ArrayList<>();
+    protected List<Polisi> polisis = new ArrayList<>();
+    protected List<int[][]> polisiPatrolPointsList = new ArrayList<>();
+    protected List<Integer> polisiTargetIndices = new ArrayList<>();
+    protected List<Integer> polisiSpeeds = new ArrayList<>();
 
     private Timer gameTimer;
     private int elapsedSeconds = 0;
@@ -130,6 +139,61 @@ public class Arena extends JPanel {
         requestFocusInWindow(); 
 
         initPauseButton(parentFrame);
+        setupCCTVandPolisi();
+
+        Timer cctvTimer = new Timer(50, e -> {
+            for (int i = 0; i < cctvs.size(); i++) {
+                double minAngle = Math.PI / 4, maxAngle = 3 * Math.PI / 4, speed = Math.toRadians(1.5);
+                if (cctvRights.get(i)) {
+                    cctvAngles.set(i, cctvAngles.get(i) + speed);
+                } else {
+                    cctvAngles.set(i, cctvAngles.get(i) - speed);
+                }
+                if (cctvAngles.get(i) > maxAngle) {
+                    cctvAngles.set(i, maxAngle);
+                    cctvRights.set(i, false);
+                } else if (cctvAngles.get(i) < minAngle) {
+                    cctvAngles.set(i, minAngle);
+                    cctvRights.set(i, true);
+                }
+            }
+            repaint();
+        });
+        cctvTimer.start();
+
+        Timer polisiTimer = new Timer(20, e -> {
+            for (int i = 0; i < polisis.size(); i++) {
+                int[][] patrolPoints = polisiPatrolPointsList.get(i);
+                int targetIndex = polisiTargetIndices.get(i);
+                int speed = polisiSpeeds.get(i);
+                Polisi polisi = polisis.get(i);
+
+                int targetX = patrolPoints[targetIndex][0], targetY = patrolPoints[targetIndex][1];
+                int dx = targetX - polisi.getX(), dy = targetY - polisi.getY();
+                int dist = (int)Math.sqrt(dx * dx + dy * dy);
+                if (dist > speed) {
+                    polisi.setX(polisi.getX() + speed * dx / dist);
+                    polisi.setY(polisi.getY() + speed * dy / dist);
+                } else {
+                    polisi.setX(targetX);
+                    polisi.setY(targetY);
+                    int nextIndex = (targetIndex + 1) % patrolPoints.length;
+                    int nextX = patrolPoints[nextIndex][0];
+                    if (nextX < targetX) {
+                        polisi.setImage("RobberyBob/Assets/polisiKiri.png");
+                    } else if (nextX > targetX) {
+                        polisi.setImage("RobberyBob/Assets/polisiKanan.png");
+                    }
+                    polisiTargetIndices.set(i, nextIndex);
+                }
+            }
+            repaint();
+        });
+        polisiTimer.start();
+    }
+
+    protected void setupCCTVandPolisi() {
+        // To be overridden by child class
     }
 
     private void initPauseButton(JFrame parentFrame) {
@@ -257,6 +321,45 @@ public class Arena extends JPanel {
                 }
             }
         }
+
+        // Draw CCTV vision cone
+        for (int i = 0; i < cctvs.size(); i++) {
+        CCTV cctv = cctvs.get(i);
+        double angle = cctvAngles.get(i);
+        cctv.draw(g);
+        Graphics2D g2d = (Graphics2D) g.create();
+        int cctvx = cctv.getX() + cctv.getWidth() / 2;
+        int cctvy = cctv.getY() + cctv.getHeight() / 2;
+        int visionLength = 500;
+        double sudut = Math.toRadians(60);
+        int x1 = cctvx + (int)(visionLength * Math.cos(angle - sudut / 2));
+        int y1 = cctvy + (int)(visionLength * Math.sin(angle - sudut / 2));
+        int x2 = cctvx + (int)(visionLength * Math.cos(angle + sudut / 2));
+        int y2 = cctvy + (int)(visionLength * Math.sin(angle + sudut / 2));
+        int[] xPoints = {cctvx, x1, x2};
+        int[] yPoints = {cctvy, y1, y2};
+        int bobX = bob.x + bob.width / 2, bobY = bob.y + bob.height / 2;
+        boolean bobInCone = isPointInTriangle(bobX, bobY, xPoints, yPoints);
+        if (bobInCone) {
+            g2d.setColor(new Color(255, 0, 0, 80));
+        } else {
+            g2d.setColor(new Color(0, 225, 0, 80));
+        }
+        g2d.fillPolygon(xPoints, yPoints, 3);
+        g2d.dispose();
+    }
+
+        for (Polisi polisi : polisis) {
+            polisi.draw(g);
+        }
+    }
+
+    protected boolean isPointInTriangle(int px, int py, int[] x, int[] y) {
+        double d1 = (px - x[1]) * (y[0] - y[1]) - (x[0] - x[1]) * (py - y[1]);
+        double d2 = (px - x[2]) * (y[1] - y[2]) - (x[1] - x[2]) * (py - y[2]);
+        double d3 = (px - x[0]) * (y[2] - y[0]) - (x[2] - x[0]) * (py - y[0]);
+        boolean has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0), has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+        return !(has_neg && has_pos);
     }
 
 
