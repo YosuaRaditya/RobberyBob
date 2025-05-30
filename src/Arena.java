@@ -158,7 +158,7 @@ public class Arena extends JPanel {
         } catch (IOException e) {
             System.out.println("Gagal load pause/play icon: " + e.getMessage());
         }
-    }
+    }  
 
     private void showPauseMenu(JFrame parentFrame) {
         // Buat pause menu jika belum ada
