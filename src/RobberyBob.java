@@ -19,8 +19,8 @@ public class RobberyBob {
     private int smokeIndex = 0;
     // Use float for smoother movement
     private float xPos, yPos;   
-    private int x, y; // Integer positions for rendering
-    private int width = 170, height = 170;
+    public int x, y;
+    public int width = 200, height = 200;
     private String arah = "kanan";
     private boolean isMoving = false;
     private boolean isHiding = false;
