@@ -3,16 +3,45 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
+import java.util.LinkedList;
+import java.util.Queue;
+import javax.swing.Timer;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class Polisi extends Penjaga {
     private int[][] patrolPoints;
     private int patrolIndex = 0;
     private int speed = 2;
     private String arah = "kanan"; // default arah hadap
+    private boolean chasing = false;
+    private Queue<Point> bobTrail = new LinkedList<>();
+    private int detectionRadius = 250; // radius deteksi polisi
+    private RobberyBob targetBob; // referensi ke Bob
+    private boolean isTeleporting = false;
+    private int teleportFrame = 0;
+    private Timer teleportTimer;
+    private Timer teleportDelayTimer;
+    private BufferedImage[] teleportSprites = new BufferedImage[9];
 
     public Polisi(int x, int y, int width, int height, String imagePath, int[][] patrolPoints) {
         super(x, y, width, height, loadImage(imagePath));
         this.patrolPoints = patrolPoints;
+        loadTeleportSprites();
+    }
+
+    private void loadTeleportSprites() {
+        for (int i = 0; i < 9; i++) {
+            try {
+                teleportSprites[i] = ImageIO.read(new File("RobberyBob/Assets/Asset" + (i + 1) + ".png"));
+            } catch (IOException e) {
+                System.out.println("Gagal load teleport sprite: " + e.getMessage());
+            }
+        }
+    }
+
+    public void setTargetBob(RobberyBob bob) {
+        this.targetBob = bob;
     }
 
     private static BufferedImage loadImage(String path) {
@@ -24,33 +53,144 @@ public class Polisi extends Penjaga {
         }
     }
 
+// ...existing code...
     @Override
-    public void update() {
+public void update() {
+    if (isTeleporting) return; // Jangan update saat teleport animasi
+
+    if (targetBob != null) {
+        int bobCenterX = targetBob.x + targetBob.width / 2;
+        int bobCenterY = targetBob.y + targetBob.height / 2;
+        int policeCenterX = x + width / 2;
+        int policeCenterY = y + height / 2;
+        int distToBob = (int) Math.hypot(bobCenterX - policeCenterX, bobCenterY - policeCenterY);
+
+        if (distToBob < detectionRadius && !targetBob.isHiding()) {
+            chasing = true;
+            if (teleportDelayTimer != null) {
+                teleportDelayTimer.stop();
+                teleportDelayTimer = null;
+            }
+            if (teleportTimer != null) {
+                teleportTimer.stop();
+                teleportTimer = null;
+            }
+            // Tambahkan jejak Bob
+            if (bobTrail.isEmpty() || !bobTrail.peek().equals(new Point(bobCenterX, bobCenterY))) {
+                bobTrail.add(new Point(bobCenterX, bobCenterY));
+                if (bobTrail.size() > 30) bobTrail.poll();
+            }
+        } else {
+            if (chasing) {
+                chasing = false;
+                bobTrail.clear();
+                // Mulai delay 2 detik sebelum teleport
+                if (teleportDelayTimer == null && !isTeleporting) {
+                    teleportDelayTimer = new Timer(2000, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            teleportDelayTimer.stop();
+                            teleportDelayTimer = null;
+                            startTeleport();
+                        }
+                    });
+                    teleportDelayTimer.setRepeats(false);
+                    teleportDelayTimer.start();
+                }
+            }
+        }
+    }
+
+    if (chasing && !bobTrail.isEmpty()) {
+        Point next = bobTrail.peek();
+        int targetX = next.x - width / 2;
+        int targetY = next.y - height / 2;
+        int dx = targetX - x;
+        int dy = targetY - y;
+
+        // Hanya gerak satu sumbu per update (prioritas X dulu)
+        if (Math.abs(dx) > 0) {
+            int step = Math.min(speed, Math.abs(dx));
+            x += (dx > 0) ? step : -step;
+            arah = dx > 0 ? "kanan" : "kiri";
+        } else if (Math.abs(dy) > 0) {
+            int step = Math.min(speed, Math.abs(dy));
+            y += (dy > 0) ? step : -step;
+            arah = dy > 0 ? "bawah" : "atas";
+        }
+
+        // Jika sudah sampai ke titik, ambil jejak berikutnya
+        if (Math.abs(dx) <= speed && Math.abs(dy) <= speed) {
+            x = targetX;
+            y = targetY;
+            bobTrail.poll();
+        }
+    } else if (!isTeleporting && (teleportDelayTimer == null)) {
+        // Patrol normal jika tidak teleport dan tidak delay
         if (patrolPoints == null || patrolPoints.length == 0) return;
         int targetX = patrolPoints[patrolIndex][0];
         int targetY = patrolPoints[patrolIndex][1];
         int dx = targetX - x;
         int dy = targetY - y;
-        int dist = (int)Math.sqrt(dx * dx + dy * dy);
-        if (dist > speed) {
-            x += speed * dx / dist;
-            y += speed * dy / dist;
-            // Update arah hadap berdasarkan gerakan
-            if (Math.abs(dx) > Math.abs(dy)) {
-                arah = dx > 0 ? "kanan" : "kiri";
-            } else if (Math.abs(dy) > 0) {
-                arah = dy > 0 ? "bawah" : "atas";
-            }
-        } else {
+
+        // Hanya gerak satu sumbu per update (prioritas X dulu)
+        if (Math.abs(dx) > 0) {
+            int step = Math.min(speed, Math.abs(dx));
+            x += (dx > 0) ? step : -step;
+            arah = dx > 0 ? "kanan" : "kiri";
+        } else if (Math.abs(dy) > 0) {
+            int step = Math.min(speed, Math.abs(dy));
+            y += (dy > 0) ? step : -step;
+            arah = dy > 0 ? "bawah" : "atas";
+        }
+
+        // Jika sudah sampai ke titik patrol, lanjut ke berikutnya
+        if (Math.abs(dx) <= speed && Math.abs(dy) <= speed) {
             x = targetX;
             y = targetY;
             patrolIndex = (patrolIndex + 1) % patrolPoints.length;
         }
     }
+}
+// ...existing code...
+
+    private void startTeleport() {
+        isTeleporting = true;
+        teleportFrame = 0;
+        teleportTimer = new Timer(80, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                teleportFrame++;
+                if (teleportFrame >= teleportSprites.length) {
+                    teleportTimer.stop();
+                    teleportTimer = null;
+                    // Teleport ke patrol point berikutnya
+                    int targetX = patrolPoints[patrolIndex][0];
+                    int targetY = patrolPoints[patrolIndex][1];
+                    x = targetX;
+                    y = targetY;
+                    patrolIndex = (patrolIndex + 1) % patrolPoints.length;
+                    isTeleporting = false;
+                }
+            }
+        });
+        teleportTimer.start();
+    }
 
     @Override
     public void draw(Graphics g) {
-        if (image != null) {
+        // Gambar radius deteksi (lingkaran merah transparan)
+        Graphics2D g2dRadius = (Graphics2D) g.create();
+        g2dRadius.setColor(new Color(255, 0, 0, 60));
+        int centerX = x + width / 2;
+        int centerY = y + height / 2;
+        int r = detectionRadius;
+        g2dRadius.fillOval(centerX - r, centerY - r, r * 2, r * 2);
+        g2dRadius.dispose();
+
+        if (isTeleporting && teleportFrame < teleportSprites.length && teleportSprites[teleportFrame] != null) {
+            g.drawImage(teleportSprites[teleportFrame], x, y, width, height, null);
+        } else if (image != null) {
             Graphics2D g2d = (Graphics2D) g.create();
             double angle = 0;
             switch (arah) {

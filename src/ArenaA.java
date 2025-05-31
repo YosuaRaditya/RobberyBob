@@ -20,9 +20,10 @@ public class ArenaA extends Arena {
         cctvAngles.add(Math.PI / 2);
         cctvRights.add(true);
 
-        // Tambahkan polisi dengan patrol point
         int[][] patrol = { {500, 170}, {700, 170}};
-        penjagaList.add(new Polisi(500, 170, 70, 70, "RobberyBob/Assets/polisi.png", patrol));
+        Polisi polisi = new Polisi(500, 170, 70, 70, "RobberyBob/Assets/polisi.png", patrol);
+        polisi.setTargetBob(bob); // <-- ini penting!
+        penjagaList.add(polisi);
     }
 
     public static List<Item> getBarangArenaA() {
