@@ -16,7 +16,6 @@ public class Polisi extends Penjaga {
     private String arah = "kanan"; // default arah hadap
     private boolean chasing = false;
     private Queue<Point> bobTrail = new LinkedList<>();
-    private int detectionRadius = 250; // radius deteksi polisi
     private RobberyBob targetBob; // referensi ke Bob
     private boolean isTeleporting = false;
     private int teleportFrame = 0;
@@ -61,11 +60,42 @@ public void update() {
     if (targetBob != null) {
         int bobCenterX = targetBob.x + targetBob.width / 2;
         int bobCenterY = targetBob.y + targetBob.height / 2;
-        int policeCenterX = x + width / 2;
-        int policeCenterY = y + height / 2;
-        int distToBob = (int) Math.hypot(bobCenterX - policeCenterX, bobCenterY - policeCenterY);
 
-        if (distToBob < detectionRadius && !targetBob.isHiding()) {
+        // Area deteksi persegi panjang (harus sama dengan draw)
+        int rectWidth = 300;
+        int rectHeight = 250;
+        int offset = 70; // harus sama dengan di draw
+        int rectX = x + width / 2 - offset;
+        int rectY = y + (height / 2) - (rectHeight / 2);
+
+        // Rotasi sesuai arah hadap polisi
+        double angle = 0;
+        switch (arah) {
+    case "kanan":
+        rectX = x + width / 2 - offset;
+        break;
+    case "kiri":
+        rectX = x + width / 2 - (rectWidth - offset);
+        break;
+    case "bawah":
+        rectX = x + width / 2 - rectWidth / 2;
+        rectY = y + height / 2 - offset;
+        break;
+    case "atas":
+        rectX = x + width / 2 - rectWidth / 2;
+        rectY = y + height / 2 - (rectHeight - offset);
+        break;
+}
+        double cos = Math.cos(-angle);
+        double sin = Math.sin(-angle);
+        int anchorX = rectX;
+        int anchorY = rectY + rectHeight / 2;
+        int relBobX = bobCenterX - anchorX;
+        int relBobY = bobCenterY - anchorY;
+        int localX = (int)(relBobX * cos - relBobY * sin);
+        int localY = (int)(relBobX * sin + relBobY * cos);
+
+        if (localX >= 0 && localX <= rectWidth && localY >= -rectHeight/2 && localY <= rectHeight/2 && !targetBob.isHiding()) {
             chasing = true;
             if (teleportDelayTimer != null) {
                 teleportDelayTimer.stop();
@@ -179,28 +209,53 @@ public void update() {
 
     @Override
     public void draw(Graphics g) {
-        // Gambar radius deteksi (lingkaran merah transparan)
+        // Gambar area deteksi (persegi panjang merah transparan)
         Graphics2D g2dRadius = (Graphics2D) g.create();
         g2dRadius.setColor(new Color(255, 0, 0, 60));
-        int centerX = x + width / 2;
-        int centerY = y + height / 2;
-        int r = detectionRadius;
-        g2dRadius.fillOval(centerX - r, centerY - r, r * 2, r * 2);
+        int rectWidth = 300;
+        int rectHeight = 250;
+        int offset = 70; // geser polisi ke kanan 40px dari sisi kiri rectangle
+        int rectX = x + width / 2 - offset;
+        int rectY = y + (height / 2) - (rectHeight / 2);
+
+        // Rotasi sesuai arah hadap polisi
+        double angle = 0;
+        switch (arah) {
+    case "kanan":
+        rectX = x + width / 2 - offset;
+        break;
+    case "kiri":
+        rectX = x + width / 2 - (rectWidth - offset);
+        break;
+    case "bawah":
+        rectX = x + width / 2 - rectWidth / 2;
+        rectY = y + height / 2 - offset;
+        break;
+    case "atas":
+        rectX = x + width / 2 - rectWidth / 2;
+        rectY = y + height / 2 - (rectHeight - offset);
+        break;
+}
+        g2dRadius.translate(rectX, rectY + rectHeight / 2);
+        g2dRadius.rotate(angle);
+        g2dRadius.translate(-rectX, -(rectY + rectHeight / 2));
+        g2dRadius.fillRect(rectX, rectY, rectWidth, rectHeight);
         g2dRadius.dispose();
 
+        // Gambar polisi seperti biasa
         if (isTeleporting && teleportFrame < teleportSprites.length && teleportSprites[teleportFrame] != null) {
             g.drawImage(teleportSprites[teleportFrame], x, y, width, height, null);
         } else if (image != null) {
             Graphics2D g2d = (Graphics2D) g.create();
-            double angle = 0;
+            double imgAngle = 0;
             switch (arah) {
-                case "kanan": angle = Math.PI / 2; break;
-                case "kiri": angle = -Math.PI / 2; break;
-                case "bawah": angle = Math.PI; break;
-                case "atas": angle = 0; break;
+                case "kanan": imgAngle = Math.PI / 2; break;
+                case "kiri": imgAngle = -Math.PI / 2; break;
+                case "bawah": imgAngle = Math.PI; break;
+                case "atas": imgAngle = 0; break;
             }
             g2d.translate(x + width / 2, y + height / 2);
-            g2d.rotate(angle);
+            g2d.rotate(imgAngle);
             g2d.drawImage(image, -width / 2, -height / 2, width, height, null);
             g2d.dispose();
         }
