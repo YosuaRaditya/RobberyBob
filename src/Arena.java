@@ -20,6 +20,9 @@ public class Arena extends JPanel {
     protected List<CCTV> cctvs = new ArrayList<>();
     protected List<Double> cctvAngles = new ArrayList<>();
     protected List<Boolean> cctvRights = new ArrayList<>();
+    private boolean cctvTriggered = false;
+    private long lastCCTVTriggerTime = 0;
+    private final long CCTV_TRIGGER_COOLDOWN = 2000; // ms
 
     protected List<Penjaga> penjagaList = new ArrayList<>();
 
@@ -303,6 +306,7 @@ public class Arena extends JPanel {
         }
 
         // Draw CCTV vision cone
+        boolean bobDetectedByCCTV = false;
         for (int i = 0; i < cctvs.size(); i++) {
             CCTV cctv = cctvs.get(i);
             double angle = cctvAngles.get(i);
@@ -322,12 +326,30 @@ public class Arena extends JPanel {
             boolean bobInCone = isPointInTriangle(bobX, bobY, xPoints, yPoints);
             if (bobInCone) {
                 g2d.setColor(new Color(255, 0, 0, 80));
+                bobDetectedByCCTV = true;
             } else {
                 g2d.setColor(new Color(0, 225, 0, 80));
             }
             g2d.fillPolygon(xPoints, yPoints, 3);
             g2d.dispose();
         }
+
+        if (bobDetectedByCCTV && !cctvTriggered && !penjagaList.isEmpty()) {
+    long now = System.currentTimeMillis();
+    if (now - lastCCTVTriggerTime > CCTV_TRIGGER_COOLDOWN) {
+        cctvTriggered = true;
+        lastCCTVTriggerTime = now;
+        // Trigger polisi pertama di list ke koordinat yang kamu mau
+        Penjaga penjaga = penjagaList.get(0);
+        if (penjaga instanceof Polisi) {
+            ((Polisi)penjaga).moveTo(800, 400); // <-- GANTI KOORDINAT DI SINI SESUAI KEINGINAN
+        }
+        // Reset trigger setelah delay
+        Timer resetTimer = new Timer((int)CCTV_TRIGGER_COOLDOWN, e -> cctvTriggered = false);
+        resetTimer.setRepeats(false);
+        resetTimer.start();
+    }
+}
     }
 
     protected boolean isPointInTriangle(int px, int py, int[] x, int[] y) {

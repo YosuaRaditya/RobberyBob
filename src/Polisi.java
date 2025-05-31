@@ -22,6 +22,8 @@ public class Polisi extends Penjaga {
     private Timer teleportTimer;
     private Timer teleportDelayTimer;
     private BufferedImage[] teleportSprites = new BufferedImage[9];
+    private boolean isMovingToTarget = false;
+    private int targetX, targetY;
 
     public Polisi(int x, int y, int width, int height, String imagePath, int[][] patrolPoints) {
         super(x, y, width, height, loadImage(imagePath));
@@ -39,6 +41,12 @@ public class Polisi extends Penjaga {
         }
     }
 
+    public void moveTo(int x, int y) {
+        this.targetX = x;
+        this.targetY = y;
+        this.isMovingToTarget = true;
+    }
+
     public void setTargetBob(RobberyBob bob) {
         this.targetBob = bob;
     }
@@ -53,84 +61,86 @@ public class Polisi extends Penjaga {
     }
 
 // ...existing code...
-    @Override
+    // ...existing code...
+@Override
 public void update() {
     if (isTeleporting) return; // Jangan update saat teleport animasi
 
+    // ==== CEK DULU: Apakah Bob terdeteksi? ====
+    boolean bobDetected = false;
     if (targetBob != null) {
         int bobCenterX = targetBob.x + targetBob.width / 2;
         int bobCenterY = targetBob.y + targetBob.height / 2;
 
-        // Area deteksi persegi panjang (harus sama dengan draw)
         int rectWidth = 300;
         int rectHeight = 250;
-        int offset = 70; // harus sama dengan di draw
+        int offset = 70;
         int rectX = x + width / 2 - offset;
         int rectY = y + (height / 2) - (rectHeight / 2);
 
-        // Rotasi sesuai arah hadap polisi
-        double angle = 0;
         switch (arah) {
-    case "kanan":
-        rectX = x + width / 2 - offset;
-        break;
-    case "kiri":
-        rectX = x + width / 2 - (rectWidth - offset);
-        break;
-    case "bawah":
-        rectX = x + width / 2 - rectWidth / 2;
-        rectY = y + height / 2 - offset;
-        break;
-    case "atas":
-        rectX = x + width / 2 - rectWidth / 2;
-        rectY = y + height / 2 - (rectHeight - offset);
-        break;
-}
-        double cos = Math.cos(-angle);
-        double sin = Math.sin(-angle);
-        int anchorX = rectX;
-        int anchorY = rectY + rectHeight / 2;
-        int relBobX = bobCenterX - anchorX;
-        int relBobY = bobCenterY - anchorY;
-        int localX = (int)(relBobX * cos - relBobY * sin);
-        int localY = (int)(relBobX * sin + relBobY * cos);
-
-        if (localX >= 0 && localX <= rectWidth && localY >= -rectHeight/2 && localY <= rectHeight/2 && !targetBob.isHiding()) {
-            chasing = true;
-            if (teleportDelayTimer != null) {
-                teleportDelayTimer.stop();
-                teleportDelayTimer = null;
-            }
-            if (teleportTimer != null) {
-                teleportTimer.stop();
-                teleportTimer = null;
-            }
-            // Tambahkan jejak Bob
-            if (bobTrail.isEmpty() || !bobTrail.peek().equals(new Point(bobCenterX, bobCenterY))) {
-                bobTrail.add(new Point(bobCenterX, bobCenterY));
-                if (bobTrail.size() > 30) bobTrail.poll();
-            }
-        } else {
-            if (chasing) {
-                chasing = false;
-                bobTrail.clear();
-                // Mulai delay 2 detik sebelum teleport
-                if (teleportDelayTimer == null && !isTeleporting) {
-                    teleportDelayTimer = new Timer(2000, new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            teleportDelayTimer.stop();
-                            teleportDelayTimer = null;
-                            startTeleport();
-                        }
-                    });
-                    teleportDelayTimer.setRepeats(false);
-                    teleportDelayTimer.start();
-                }
-            }
+            case "kanan":
+                rectX = x + width / 2 - offset;
+                break;
+            case "kiri":
+                rectX = x + width / 2 - (rectWidth - offset);
+                break;
+            case "bawah":
+                rectX = x + width / 2 - rectWidth / 2;
+                rectY = y + height / 2 - offset;
+                break;
+            case "atas":
+                rectX = x + width / 2 - rectWidth / 2;
+                rectY = y + height / 2 - (rectHeight - offset);
+                break;
+        }
+        // Cek apakah Bob ada di area deteksi dan tidak sembunyi
+        if (bobCenterX >= rectX && bobCenterX <= rectX + rectWidth &&
+            bobCenterY >= rectY && bobCenterY <= rectY + rectHeight &&
+            !targetBob.isHiding()) {
+            bobDetected = true;
         }
     }
 
+    // ==== PRIORITAS: Jika Bob terdeteksi, langsung kejar Bob ====
+    if (bobDetected) {
+        chasing = true;
+        isMovingToTarget = false; // Hentikan moveTo jika sedang
+        if (teleportDelayTimer != null) {
+            teleportDelayTimer.stop();
+            teleportDelayTimer = null;
+        }
+        if (teleportTimer != null) {
+            teleportTimer.stop();
+            teleportTimer = null;
+        }
+        // Tambahkan jejak Bob
+        int bobCenterX = targetBob.x + targetBob.width / 2;
+        int bobCenterY = targetBob.y + targetBob.height / 2;
+        if (bobTrail.isEmpty() || !bobTrail.peek().equals(new Point(bobCenterX, bobCenterY))) {
+            bobTrail.add(new Point(bobCenterX, bobCenterY));
+            if (bobTrail.size() > 30) bobTrail.poll();
+        }
+    } else if (chasing) {
+        // Jika sebelumnya chasing, tapi sekarang Bob tidak terdeteksi, stop chasing
+        chasing = false;
+        bobTrail.clear();
+        // Mulai delay teleport jika perlu
+        if (teleportDelayTimer == null && !isTeleporting) {
+            teleportDelayTimer = new Timer(2000, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    teleportDelayTimer.stop();
+                    teleportDelayTimer = null;
+                    startTeleport();
+                }
+            });
+            teleportDelayTimer.setRepeats(false);
+            teleportDelayTimer.start();
+        }
+    }
+
+    // === Jika sedang mengejar Bob ===
     if (chasing && !bobTrail.isEmpty()) {
         Point next = bobTrail.peek();
         int targetX = next.x - width / 2;
@@ -138,7 +148,6 @@ public void update() {
         int dx = targetX - x;
         int dy = targetY - y;
 
-        // Hanya gerak satu sumbu per update (prioritas X dulu)
         if (Math.abs(dx) > 0) {
             int step = Math.min(speed, Math.abs(dx));
             x += (dx > 0) ? step : -step;
@@ -149,21 +158,65 @@ public void update() {
             arah = dy > 0 ? "bawah" : "atas";
         }
 
-        // Jika sudah sampai ke titik, ambil jejak berikutnya
         if (Math.abs(dx) <= speed && Math.abs(dy) <= speed) {
             x = targetX;
             y = targetY;
             bobTrail.poll();
         }
-    } else if (!isTeleporting && (teleportDelayTimer == null)) {
-        // Patrol normal jika tidak teleport dan tidak delay
+
+        // Cek tangkap Bob
+        if (targetBob != null) {
+            Rectangle polisiRect = new Rectangle(x, y, width, height);
+            Rectangle bobRect = new Rectangle(targetBob.x, targetBob.y, targetBob.width, targetBob.height);
+            if (polisiRect.intersects(bobRect) && !targetBob.isHiding()) {
+                System.out.println("mantabbb");
+                // (opsional) chasing = false;
+            }
+        }
+        return; // PENTING: Jangan lakukan aksi lain jika sedang mengejar Bob!
+    }
+
+    // === Jika tidak mengejar Bob, baru lakukan moveTo/Patrol seperti biasa ===
+    if (isMovingToTarget) {
+        int dx = targetX - x;
+        int dy = targetY - y;
+        if (Math.abs(dx) > 0) {
+            int step = Math.min(speed, Math.abs(dx));
+            x += (dx > 0) ? step : -step;
+            arah = dx > 0 ? "kanan" : "kiri";
+        } else if (Math.abs(dy) > 0) {
+            int step = Math.min(speed, Math.abs(dy));
+            y += (dy > 0) ? step : -step;
+            arah = dy > 0 ? "bawah" : "atas";
+        }
+        if (Math.abs(dx) <= speed && Math.abs(dy) <= speed) {
+            x = targetX;
+            y = targetY;
+            isMovingToTarget = false;
+            if (teleportDelayTimer == null && !isTeleporting) {
+                teleportDelayTimer = new Timer(2000, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        teleportDelayTimer.stop();
+                        teleportDelayTimer = null;
+                        startTeleport();
+                    }
+                });
+                teleportDelayTimer.setRepeats(false);
+                teleportDelayTimer.start();
+            }
+        }
+        return;
+    }
+
+    // Patrol normal jika tidak teleport dan tidak delay
+    if (!isTeleporting && (teleportDelayTimer == null)) {
         if (patrolPoints == null || patrolPoints.length == 0) return;
         int targetX = patrolPoints[patrolIndex][0];
         int targetY = patrolPoints[patrolIndex][1];
         int dx = targetX - x;
         int dy = targetY - y;
 
-        // Hanya gerak satu sumbu per update (prioritas X dulu)
         if (Math.abs(dx) > 0) {
             int step = Math.min(speed, Math.abs(dx));
             x += (dx > 0) ? step : -step;
@@ -174,7 +227,6 @@ public void update() {
             arah = dy > 0 ? "bawah" : "atas";
         }
 
-        // Jika sudah sampai ke titik patrol, lanjut ke berikutnya
         if (Math.abs(dx) <= speed && Math.abs(dy) <= speed) {
             x = targetX;
             y = targetY;
@@ -182,6 +234,7 @@ public void update() {
         }
     }
 }
+// ...existing code...
 // ...existing code...
 
     private void startTeleport() {
