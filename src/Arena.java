@@ -3,10 +3,10 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.util.ArrayList;
 
 public class Arena extends JPanel {
     protected BufferedImage mapImage, collisionMap;
@@ -33,6 +33,8 @@ public class Arena extends JPanel {
     private int totalItemCount = 0;
     private int collectedItemCount = 0;
     private int goldCollectedThisArena = 0;
+    protected JFrame parentFrame;
+    protected JButton inventoryButton;
 
     public int getElapsedSeconds() {
         return elapsedSeconds;
@@ -76,6 +78,7 @@ public class Arena extends JPanel {
     public Arena(String mapPath, String collisionPath, int startX, int startY, JFrame parentFrame, List<Item> itemList) {
         this.itemList = itemList;
         this.totalItemCount = itemList.size();
+        this.parentFrame = parentFrame;
 
         setLayout(null);
 
@@ -140,6 +143,7 @@ public class Arena extends JPanel {
         requestFocusInWindow(); 
 
         initPauseButton(parentFrame);
+        initInventoryButton(parentFrame);
         setupCCTVandPenjaga();
 
         Timer cctvTimer = new Timer(50, e -> {
@@ -171,6 +175,16 @@ public class Arena extends JPanel {
         penjagaTimer.start();
     }
 
+    public void showPoliceInteractionPanel() {
+        SwingUtilities.invokeLater(() -> {
+            PoliceInteractionPanel policePanel = new PoliceInteractionPanel(parentFrame, this);
+            policePanel.setBounds(0, 0, getWidth(), getHeight());
+            parentFrame.setContentPane(policePanel);
+            parentFrame.revalidate();
+            parentFrame.repaint();
+        });
+    }
+
     protected void setupCCTVandPenjaga() {
         // To be overridden by child class
     }
@@ -178,7 +192,7 @@ public class Arena extends JPanel {
     private void initPauseButton(JFrame parentFrame) {
         try {
             pauseButton = new JButton();
-            pauseButton.setBounds(20, 20, 60, 60);
+            pauseButton.setBounds(20, 45, 60, 60);
             pauseButton.setContentAreaFilled(false);
             pauseButton.setBorderPainted(false);
             pauseButton.setFocusable(false);
@@ -242,6 +256,32 @@ public class Arena extends JPanel {
         resumeTimer();
         requestFocus(); // Kembalikan fokus ke game
         repaint();
+    }
+
+    private void initInventoryButton(JFrame parentFrame){
+        try {
+            inventoryButton = new JButton();
+            inventoryButton.setBounds(100, 45, 60, 60);
+            inventoryButton.setContentAreaFilled(false);
+            inventoryButton.setBorderPainted(false);
+            inventoryButton.setFocusable(false);
+            inventoryButton.addActionListener(e -> openInventory(parentFrame));
+            BufferedImage originalImage = ImageIO.read(new File("RobberyBob/Assets/backpackIcon.png"));
+            int newWidth = 60, newHeight = 60;
+            Image scaledImage = originalImage.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+            inventoryButton.setIcon(new ImageIcon(scaledImage));
+
+            add(inventoryButton);
+        } catch (Exception e) {
+            System.out.println("Gagal inisialisasi inventory button: " + e.getMessage());
+        }
+    }
+
+    private void openInventory(JFrame parentFrame) {
+        pauseTimer();
+        parentFrame.setContentPane(new InventoryPanel(parentFrame, bob, this));
+        parentFrame.revalidate();
+        parentFrame.repaint();
     }
 
     @Override
@@ -332,6 +372,7 @@ public class Arena extends JPanel {
             }
             g2d.fillPolygon(xPoints, yPoints, 3);
             g2d.dispose();
+
         }
 
         if (bobDetectedByCCTV && !cctvTriggered && !penjagaList.isEmpty()) {

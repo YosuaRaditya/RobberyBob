@@ -10,8 +10,9 @@ import javax.swing.*;
 public class HomePanel extends JPanel {
     
     private BufferedImage background;
-    private BufferedImage arenaA, arenaB, arenaC, arenaD;
-    private Rectangle arenaABox, arenaBBox, arenaCBox, arenaDBox;
+    private BufferedImage arenaA, arenaB, arenaC, arenaD, storeIcon, optionsIcon;
+    private Rectangle arenaABox, arenaBBox, arenaCBox, arenaDBox, storeBox, optionsBox;
+    private RobberyBob bob;
 
     private JFrame parentFrame;
 
@@ -34,7 +35,14 @@ public class HomePanel extends JPanel {
         arenaBBox = new Rectangle(900, 107, 327, 297);
         arenaCBox = new Rectangle(500, 397, 316, 277);
         arenaDBox = new Rectangle(905, 380, 327, 290);
-
+        try {
+            storeIcon = ImageIO.read(new File("RobberyBob/Assets/StoreIcon.png"));
+            optionsIcon = ImageIO.read(new File("RobberyBob/Assets/OptionsIcon.png"));
+        } catch (IOException e) {
+            System.out.println("Gagal memuat icon home panel: " + e.getMessage());
+        }
+        storeBox = new Rectangle(60, 175, 80, 80);
+        optionsBox = new Rectangle(60, 275, 80, 80);
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -63,6 +71,19 @@ public class HomePanel extends JPanel {
                     frame.repaint();
                     frame.getContentPane().requestFocusInWindow();  // PENTING
                 }
+
+                if (storeBox.contains(e.getPoint())) {
+                    parentFrame.setContentPane(new StorePanel(parentFrame, bob));
+                    parentFrame.revalidate();
+                    parentFrame.repaint();
+                    return;
+                }
+                if (optionsBox.contains(e.getPoint())) {
+                    parentFrame.setContentPane(new OptionsPanel(parentFrame));
+                    parentFrame.revalidate();
+                    parentFrame.repaint();
+                    return;
+                }
             }
         });
     } 
@@ -86,5 +107,23 @@ public class HomePanel extends JPanel {
         if (arenaB != null) g.drawImage(arenaB, arenaBBox.x, arenaBBox.y, arenaBBox.width, arenaBBox.height, null);
         if (arenaC != null) g.drawImage(arenaC, arenaCBox.x, arenaCBox.y, arenaCBox.width, arenaCBox.height, null);
         if (arenaD != null) g.drawImage(arenaD, arenaDBox.x, arenaDBox.y, arenaDBox.width, arenaDBox.height, null);
+        if (storeIcon != null){
+            g.drawImage(storeIcon, storeBox.x, storeBox.y, storeBox.width, storeBox.height, null);
+            try {
+                BufferedImage storeText = ImageIO.read(new File("RobberyBob/Assets/StoreHomeTXT.png"));
+                g.drawImage(storeText, storeBox.x + storeBox.width + 10, storeBox.y + 30, 100, 40, null);
+            } catch (IOException e) {
+                System.out.println("Gagal memuat StoreHomeTXT: " + e.getMessage());
+            }
+        }
+        if (optionsIcon != null){
+            g.drawImage(optionsIcon, optionsBox.x, optionsBox.y, optionsBox.width, optionsBox.height, null);
+            try {
+                BufferedImage optionsText = ImageIO.read(new File("RobberyBob/Assets/OptionsTXT.png"));
+                g.drawImage(optionsText, optionsBox.x + optionsBox.width + 5, optionsBox.y + 30, 120, 40, null);
+            } catch (IOException e) {
+                System.out.println("Gagal memuat OptionsTXT: " + e.getMessage());
+            }
+        }
     }
 }

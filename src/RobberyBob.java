@@ -63,6 +63,8 @@ public class RobberyBob {
     private int currentPanelH;
 
     private int pendingGold = 0;
+    private int grabAbilityLevel = 1;
+    private float grabSpeed = 1.0f;
 
     public void setOnFinish(Runnable onFinish) {
         this.onFinish = onFinish;
@@ -117,6 +119,14 @@ public class RobberyBob {
             updateStamina();
         });
         staminaTimer.start();
+    }
+
+    public void playCaughtSmoke() {
+        smokeIndex = 0;
+        isPlayingSmoke = true;
+        if (!smokeTimer.isRunning()) {
+            smokeTimer.start();
+        }
     }
     
     // Manage stamina regeneration and drain
@@ -357,7 +367,7 @@ public class RobberyBob {
         int barWidth = 200;
         int barHeight = 15;
         int x = 20;
-        int y = 70;
+        int y = 110;
         
         // Draw outline
         g.setColor(Color.BLACK);
@@ -644,5 +654,20 @@ public class RobberyBob {
 
     public void resetPendingGold() {
         this.pendingGold = 0;
+    }
+
+    public void increaseMaxStamina(float amount) {
+        this.maxStamina += amount;
+        this.currentStamina = this.maxStamina;
+    }
+
+    public void increaseSpeed(float amount) {
+        this.moveSpeedNormal += amount;
+        this.moveSpeedFast += amount;
+    }
+
+    public void increaseGrabAbility(int amount) {
+        this.grabAbilityLevel += amount;
+        this.grabSpeed += 0.2f * amount;
     }
 }
