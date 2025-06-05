@@ -12,7 +12,7 @@ import java.awt.event.ActionListener;
 public class Polisi extends Penjaga {
     private int[][] patrolPoints;
     private int patrolIndex = 0;
-    private int speed = 5;
+    private int speed = 3;
     private String arah = "kanan"; // default arah hadap
     private boolean chasing = false;
     private Queue<Point> bobTrail = new LinkedList<>();
@@ -104,11 +104,10 @@ public void update() {
     if (bobCenterX >= rectX && bobCenterX <= rectX + rectWidth &&
         bobCenterY >= rectY && bobCenterY <= rectY + rectHeight &&
         !targetBob.isHiding()) {
-        // Hanya chasing jika benar-benar dekat (misal < 80px)
-        if (distanceToBob < 80) {
-            bobDetected = true;
-        }
+        bobDetected = true;
     }
+
+    
 }
 
     // ==== PRIORITAS: Jika Bob terdeteksi, langsung kejar Bob ====

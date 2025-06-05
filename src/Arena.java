@@ -380,10 +380,13 @@ public class Arena extends JPanel {
     if (now - lastCCTVTriggerTime > CCTV_TRIGGER_COOLDOWN) {
         cctvTriggered = true;
         lastCCTVTriggerTime = now;
-        // Trigger polisi pertama di list ke koordinat yang kamu mau
+        // Trigger polisi pertama di list ke posisi terakhir Bob
         Penjaga penjaga = penjagaList.get(0);
         if (penjaga instanceof Polisi) {
-            ((Polisi)penjaga).moveTo(800, 600); // <-- GANTI KOORDINAT DI SINI SESUAI KEINGINAN
+            // Ambil posisi tengah Bob saat CCTV trigger
+            int bobCenterX = bob.x + bob.width / 2;
+            int bobCenterY = bob.y + bob.height / 2;
+            ((Polisi)penjaga).moveTo(bobCenterX - penjaga.getWidth() / 2, bobCenterY - penjaga.getHeight() / 2);
         }
         // Reset trigger setelah delay
         Timer resetTimer = new Timer((int)CCTV_TRIGGER_COOLDOWN, e -> cctvTriggered = false);
