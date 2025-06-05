@@ -24,6 +24,7 @@ public class Polisi extends Penjaga {
     private BufferedImage[] teleportSprites = new BufferedImage[9];
     private boolean isMovingToTarget = false;
     private int targetX, targetY;
+    private boolean isCCTVTriggered = false;
 
     public Polisi(int x, int y, int width, int height, String imagePath, int[][] patrolPoints) {
         super(x, y, width, height, loadImage(imagePath));
@@ -43,8 +44,9 @@ public class Polisi extends Penjaga {
 
     public void moveTo(int x, int y) {
         this.targetX = x;
-        this.targetY = y;
-        this.isMovingToTarget = true;
+    this.targetY = y;
+    this.isMovingToTarget = true;
+    this.isCCTVTriggered = true;
     }
 
     public void setTargetBob(RobberyBob bob) {
@@ -68,44 +70,52 @@ public void update() {
 
     // ==== CEK DULU: Apakah Bob terdeteksi? ====
     boolean bobDetected = false;
+    double distanceToBob = Double.MAX_VALUE;
     if (targetBob != null) {
-        int bobCenterX = targetBob.x + targetBob.width / 2;
-        int bobCenterY = targetBob.y + targetBob.height / 2;
+    int bobCenterX = targetBob.x + targetBob.width / 2;
+    int bobCenterY = targetBob.y + targetBob.height / 2;
+    int polisiCenterX = x + width / 2;
+    int polisiCenterY = y + height / 2;
+    distanceToBob = Math.hypot(bobCenterX - polisiCenterX, bobCenterY - polisiCenterY);
 
-        int rectWidth = 300;
-        int rectHeight = 250;
-        int offset = 70;
-        int rectX = x + width / 2 - offset;
-        int rectY = y + (height / 2) - (rectHeight / 2);
+    int rectWidth = 300;
+    int rectHeight = 250;
+    int offset = 70;
+    int rectX = x + width / 2 - offset;
+    int rectY = y + (height / 2) - (rectHeight / 2);
 
-        switch (arah) {
-            case "kanan":
-                rectX = x + width / 2 - offset;
-                break;
-            case "kiri":
-                rectX = x + width / 2 - (rectWidth - offset);
-                break;
-            case "bawah":
-                rectX = x + width / 2 - rectWidth / 2;
-                rectY = y + height / 2 - offset;
-                break;
-            case "atas":
-                rectX = x + width / 2 - rectWidth / 2;
-                rectY = y + height / 2 - (rectHeight - offset);
-                break;
-        }
-        // Cek apakah Bob ada di area deteksi dan tidak sembunyi
-        if (bobCenterX >= rectX && bobCenterX <= rectX + rectWidth &&
-            bobCenterY >= rectY && bobCenterY <= rectY + rectHeight &&
-            !targetBob.isHiding()) {
+    switch (arah) {
+        case "kanan":
+            rectX = x + width / 2 - offset;
+            break;
+        case "kiri":
+            rectX = x + width / 2 - (rectWidth - offset);
+            break;
+        case "bawah":
+            rectX = x + width / 2 - rectWidth / 2;
+            rectY = y + height / 2 - offset;
+            break;
+        case "atas":
+            rectX = x + width / 2 - rectWidth / 2;
+            rectY = y + height / 2 - (rectHeight - offset);
+            break;
+    }
+    // Cek apakah Bob ada di area deteksi dan tidak sembunyi
+    if (bobCenterX >= rectX && bobCenterX <= rectX + rectWidth &&
+        bobCenterY >= rectY && bobCenterY <= rectY + rectHeight &&
+        !targetBob.isHiding()) {
+        // Hanya chasing jika benar-benar dekat (misal < 80px)
+        if (distanceToBob < 80) {
             bobDetected = true;
         }
     }
+}
 
     // ==== PRIORITAS: Jika Bob terdeteksi, langsung kejar Bob ====
     if (bobDetected) {
         chasing = true;
-        isMovingToTarget = false; // Hentikan moveTo jika sedang
+    isMovingToTarget = false;
+    isCCTVTriggered = false;
         if (teleportDelayTimer != null) {
             teleportDelayTimer.stop();
             teleportDelayTimer = null;
