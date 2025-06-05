@@ -342,7 +342,7 @@ public class Arena extends JPanel {
         // Trigger polisi pertama di list ke koordinat yang kamu mau
         Penjaga penjaga = penjagaList.get(0);
         if (penjaga instanceof Polisi) {
-            ((Polisi)penjaga).moveTo(800, 400); // <-- GANTI KOORDINAT DI SINI SESUAI KEINGINAN
+            ((Polisi)penjaga).moveTo(800, 600); // <-- GANTI KOORDINAT DI SINI SESUAI KEINGINAN
         }
         // Reset trigger setelah delay
         Timer resetTimer = new Timer((int)CCTV_TRIGGER_COOLDOWN, e -> cctvTriggered = false);

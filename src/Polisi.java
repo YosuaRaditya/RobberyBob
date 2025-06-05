@@ -12,7 +12,7 @@ import java.awt.event.ActionListener;
 public class Polisi extends Penjaga {
     private int[][] patrolPoints;
     private int patrolIndex = 0;
-    private int speed = 2;
+    private int speed = 5;
     private String arah = "kanan"; // default arah hadap
     private boolean chasing = false;
     private Queue<Point> bobTrail = new LinkedList<>();
