@@ -44,9 +44,9 @@ public class Polisi extends Penjaga {
 
     public void moveTo(int x, int y) {
         this.targetX = x;
-    this.targetY = y;
-    this.isMovingToTarget = true;
-    this.isCCTVTriggered = true;
+        this.targetY = y;
+        this.isMovingToTarget = true;
+        this.isCCTVTriggered = true;
     }
 
     public void setTargetBob(RobberyBob bob) {
@@ -116,6 +116,7 @@ public void update() {
         chasing = true;
     isMovingToTarget = false;
     isCCTVTriggered = false;
+        isMovingToTarget = false; // Hentikan moveTo jika sedang
         if (teleportDelayTimer != null) {
             teleportDelayTimer.stop();
             teleportDelayTimer = null;
