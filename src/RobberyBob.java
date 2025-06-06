@@ -662,4 +662,8 @@ public class RobberyBob {
         this.grabAbilityLevel += amount;
         this.grabSpeed += 0.2f * amount;
     }
+
+    public void setArah(String arah) {
+        this.arah = arah;
+    }
 }

@@ -8,14 +8,18 @@ public class ArenaD extends Arena {
         super(
             "RobberyBob/Assets/mapArenaD.jpg", 
             "RobberyBob/Assets/collisionArenaD.jpg", 
-            50, 500, 
+            37, 525, 
             parentFrame,
             getBarangArenaD()  // harus static method supaya bisa dipanggil di sini
         );
     }
+    @Override
+    protected void setupCCTVandPenjaga() {
+        
+    }
     public static List<Item> getBarangArenaD() {
         List<Item> items = new ArrayList<>();
-        items.add(new Tas(500, 300));
+        items.add(new Uang(1007, 290));
         return items;
     }
 }

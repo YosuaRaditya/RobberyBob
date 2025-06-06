@@ -13,9 +13,13 @@ public class ArenaB extends Arena {
             getBarangArenaB()  // harus static method supaya bisa dipanggil di sini
         );
     }
+    @Override
+    protected void setupCCTVandPenjaga() {
+        
+    }
     public static List<Item> getBarangArenaB() {
         List<Item> items = new ArrayList<>();
-        items.add(new Tas(500, 300));
+        items.add(new Uang(890, 629));
         return items;
     }
 }

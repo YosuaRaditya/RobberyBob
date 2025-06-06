@@ -64,6 +64,7 @@ public class InventoryPanel extends JPanel{
                     parentFrame.setContentPane(arena);
                     parentFrame.revalidate();
                     parentFrame.repaint();
+                    arena.requestFocusInWindow();
                     return;
                 }
                 for (int i = 0; i < abilityButtons.length; i++) {
