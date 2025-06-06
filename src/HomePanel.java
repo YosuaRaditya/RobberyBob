@@ -18,7 +18,6 @@ public class HomePanel extends JPanel {
 
     public HomePanel(JFrame frame) {
         this.parentFrame = frame;
-
         try {
             background = ImageIO.read(new File("RobberyBob/Assets/bgHome.jpg"));
             arenaA = ImageIO.read(new File("RobberyBob/Assets/arenaA.png"));

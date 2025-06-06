@@ -35,6 +35,7 @@ public class Arena extends JPanel {
     private int goldCollectedThisArena = 0;
     protected JFrame parentFrame;
     protected JButton inventoryButton;
+    private boolean isGameOver = false;
 
     public int getElapsedSeconds() {
         return elapsedSeconds;
@@ -167,8 +168,10 @@ public class Arena extends JPanel {
         cctvTimer.start();
 
         Timer penjagaTimer = new Timer(20, e -> {
-            for (Penjaga penjaga : penjagaList) {
-                penjaga.update();
+            if(!isGameOver){
+                for (Penjaga penjaga : penjagaList) {
+                    penjaga.update();
+                }
             }
             repaint();
         });
@@ -176,6 +179,7 @@ public class Arena extends JPanel {
     }
 
     public void showPoliceInteractionPanel() {
+        isGameOver = true;
         SwingUtilities.invokeLater(() -> {
             PoliceInteractionPanel policePanel = new PoliceInteractionPanel(parentFrame, this);
             policePanel.setBounds(0, 0, getWidth(), getHeight());
@@ -354,7 +358,7 @@ public class Arena extends JPanel {
             Graphics2D g2d = (Graphics2D) g.create();
             int cctvx = cctv.getX() + cctv.getWidth() / 2;
             int cctvy = cctv.getY() + cctv.getHeight() / 2;
-            int visionLength = 500;
+            int visionLength = 350;
             double sudut = Math.toRadians(60);
             int x1 = cctvx + (int)(visionLength * Math.cos(angle - sudut / 2));
             int y1 = cctvy + (int)(visionLength * Math.sin(angle - sudut / 2));

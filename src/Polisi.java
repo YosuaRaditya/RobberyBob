@@ -5,6 +5,8 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import java.util.LinkedList;
 import java.util.Queue;
+
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -25,11 +27,30 @@ public class Polisi extends Penjaga {
     private boolean isMovingToTarget = false;
     private int targetX, targetY;
     private boolean isCCTVTriggered = false;
+    private BufferedImage[] smokeSprites = new BufferedImage[9];
+    private int smokeIndex = 0;
+    private boolean isPlayingSmoke = false;
+    private Timer smokeTimer;
+    private Arena arena;
+    private boolean isBobCaught = false;
 
-    public Polisi(int x, int y, int width, int height, String imagePath, int[][] patrolPoints) {
+    public Polisi(int x, int y, int width, int height, String imagePath, int[][] patrolPoints, Arena arena) {
         super(x, y, width, height, loadImage(imagePath));
         this.patrolPoints = patrolPoints;
+        this.arena = arena;
         loadTeleportSprites();
+        smokeTimer = new Timer(100, e -> {
+            smokeIndex++;
+            if (smokeIndex >= smokeSprites.length) {
+                isPlayingSmoke = false;
+                ((Timer)e.getSource()).stop();
+                if (isBobCaught && arena != null) {
+                    isBobCaught = false;
+                    SwingUtilities.invokeLater(() -> arena.showPoliceInteractionPanel());
+                }
+            }
+        });
+        loadSmokeSprites();
     }
 
     private void loadTeleportSprites() {
@@ -38,6 +59,16 @@ public class Polisi extends Penjaga {
                 teleportSprites[i] = ImageIO.read(new File("RobberyBob/Assets/Asset" + (i + 1) + ".png"));
             } catch (IOException e) {
                 System.out.println("Gagal load teleport sprite: " + e.getMessage());
+            }
+        }
+    }
+
+    private void loadSmokeSprites() {
+        for (int i = 0; i < 9; i++) {
+            try {
+                smokeSprites[i] = ImageIO.read(new File("RobberyBob/Assets/Asset" + (i + 1) + ".png"));
+            } catch (IOException e) {
+                System.out.println("Gagal load smokes sprites: " + e.getMessage());
             }
         }
     }
@@ -178,9 +209,11 @@ public void update() {
         if (targetBob != null) {
             Rectangle polisiRect = new Rectangle(x, y, width, height);
             Rectangle bobRect = new Rectangle(targetBob.x, targetBob.y, targetBob.width, targetBob.height);
-            if (polisiRect.intersects(bobRect) && !targetBob.isHiding()) {
-                System.out.println("mantabbb");
-                // (opsional) chasing = false;
+            if (polisiRect.intersects(bobRect) && !targetBob.isHiding() && !isPlayingSmoke && !isBobCaught) {
+                isBobCaught = true;
+                isPlayingSmoke = true;
+                smokeIndex = 0;
+                smokeTimer.restart();
             }
         }
         return; // PENTING: Jangan lakukan aksi lain jika sedang mengejar Bob!
@@ -273,38 +306,30 @@ public void update() {
     @Override
     public void draw(Graphics g) {
         // Gambar area deteksi (persegi panjang merah transparan)
-        Graphics2D g2dRadius = (Graphics2D) g.create();
-        g2dRadius.setColor(new Color(255, 0, 0, 60));
-        int rectWidth = 300;
-        int rectHeight = 250;
-        int offset = 70; // geser polisi ke kanan 40px dari sisi kiri rectangle
-        int rectX = x + width / 2 - offset;
-        int rectY = y + (height / 2) - (rectHeight / 2);
+        Graphics2D g2dCone = (Graphics2D) g.create();
+        g2dCone.setColor(new Color(255, 0, 0, 60));
+        int centerX = x + width / 2, centerY = y + height / 2, coneLength = 120;
+        double coneAngle = Math.toRadians(40);
 
         // Rotasi sesuai arah hadap polisi
         double angle = 0;
         switch (arah) {
-    case "kanan":
-        rectX = x + width / 2 - offset;
-        break;
-    case "kiri":
-        rectX = x + width / 2 - (rectWidth - offset);
-        break;
-    case "bawah":
-        rectX = x + width / 2 - rectWidth / 2;
-        rectY = y + height / 2 - offset;
-        break;
-    case "atas":
-        rectX = x + width / 2 - rectWidth / 2;
-        rectY = y + height / 2 - (rectHeight - offset);
-        break;
-}
-        g2dRadius.translate(rectX, rectY + rectHeight / 2);
-        g2dRadius.rotate(angle);
-        g2dRadius.translate(-rectX, -(rectY + rectHeight / 2));
-        g2dRadius.fillRect(rectX, rectY, rectWidth, rectHeight);
-        g2dRadius.dispose();
-
+            case "kanan": angle = 0; break;
+            case "kiri": angle = Math.PI; break;
+            case "atas": angle = -Math.PI / 2; break;
+            case "bawah": angle = Math.PI / 2; break;
+        }
+        int[] px = new int[3];
+        int[] py = new int[3];
+        
+        px[0] = centerX;
+        py[0] = centerY;
+        px[1] = centerX + (int)(coneLength * Math.cos(angle - coneAngle / 2));
+        py[1] = centerY + (int)(coneLength * Math.sin(angle - coneAngle / 2));
+        px[2] = centerX + (int)(coneLength * Math.cos(angle + coneAngle / 2));
+        py[2] = centerY + (int)(coneLength * Math.sin(angle + coneAngle / 2));
+        g2dCone.fillPolygon(px, py, 3);
+        g2dCone.dispose();
         // Gambar polisi seperti biasa
         if (isTeleporting && teleportFrame < teleportSprites.length && teleportSprites[teleportFrame] != null) {
             g.drawImage(teleportSprites[teleportFrame], x, y, width, height, null);
@@ -321,6 +346,12 @@ public void update() {
             g2d.rotate(imgAngle);
             g2d.drawImage(image, -width / 2, -height / 2, width, height, null);
             g2d.dispose();
+        }
+        if (isPlayingSmoke && smokeSprites[smokeIndex] != null) {
+            g.drawImage(smokeSprites[smokeIndex], x, y, width, height, null);
+            if (isBobCaught && targetBob != null) {
+                g.drawImage(smokeSprites[smokeIndex], targetBob.x, targetBob.y, targetBob.width, targetBob.height, null);
+            }
         }
     }
 

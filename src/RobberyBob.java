@@ -120,14 +120,6 @@ public class RobberyBob {
         });
         staminaTimer.start();
     }
-
-    public void playCaughtSmoke() {
-        smokeIndex = 0;
-        isPlayingSmoke = true;
-        if (!smokeTimer.isRunning()) {
-            smokeTimer.start();
-        }
-    }
     
     // Manage stamina regeneration and drain
     private void updateStamina() {
