@@ -141,6 +141,7 @@ public class Arena extends JPanel {
 
         initPauseButton(parentFrame);
         setupCCTVandPenjaga();
+        setupPoliceCollisionMaps(); // Add collision maps to police
 
         Timer cctvTimer = new Timer(50, e -> {
             for (int i = 0; i < cctvs.size(); i++) {
@@ -173,6 +174,15 @@ public class Arena extends JPanel {
 
     protected void setupCCTVandPenjaga() {
         // To be overridden by child class
+    }
+
+    // Add a method to provide collision map to all police objects
+    protected void setupPoliceCollisionMaps() {
+        for (Penjaga penjaga : penjagaList) {
+            if (penjaga instanceof Polisi) {
+                ((Polisi) penjaga).setCollisionMap(collisionMap, getWidth(), getHeight());
+            }
+        }
     }
 
     private void initPauseButton(JFrame parentFrame) {
@@ -248,6 +258,9 @@ public class Arena extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        // Update police collision maps periodically to handle resizing
+        setupPoliceCollisionMaps();
+        
         if (mapImage != null) {
             g.drawImage(mapImage, 0, 0, getWidth(), getHeight(), null);
         }

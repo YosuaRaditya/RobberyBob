@@ -24,6 +24,10 @@ public class Polisi extends Penjaga {
     private BufferedImage[] teleportSprites = new BufferedImage[9];
     private boolean isMovingToTarget = false;
     private int targetX, targetY;
+    
+    // Add collision detection variables
+    private BufferedImage collisionMap;
+    private int mapWidth, mapHeight;
 
     public Polisi(int x, int y, int width, int height, String imagePath, int[][] patrolPoints) {
         super(x, y, width, height, loadImage(imagePath));
@@ -50,6 +54,13 @@ public class Polisi extends Penjaga {
     public void setTargetBob(RobberyBob bob) {
         this.targetBob = bob;
     }
+    
+    // Set collision map for the police
+    public void setCollisionMap(BufferedImage collisionMap, int mapWidth, int mapHeight) {
+        this.collisionMap = collisionMap;
+        this.mapWidth = mapWidth;
+        this.mapHeight = mapHeight;
+    }
 
     private static BufferedImage loadImage(String path) {
         try {
@@ -59,9 +70,34 @@ public class Polisi extends Penjaga {
             return null;
         }
     }
+    
+    // Check if a position is walkable
+    private boolean isWalkable(int px, int py) {
+        if (collisionMap == null) {
+            return true; // If no collision map, allow movement
+        }
+        
+        int imgW = collisionMap.getWidth();
+        int imgH = collisionMap.getHeight();
+        int scaledX = px * imgW / mapWidth;
+        int scaledY = py * imgH / mapHeight;
 
-// ...existing code...
-    // ...existing code...
+        // Check if within map bounds
+        if (scaledX < 0 || scaledY < 0 || scaledX >= imgW || scaledY >= imgH) {
+            return false;
+        }
+
+        Color color = new Color(collisionMap.getRGB(scaledX, scaledY));
+        
+        // Allow walking on white areas (RGB all > 200)
+        boolean isWhiteArea = color.getRed() > 200 && color.getGreen() > 200 && color.getBlue() > 200;
+        
+        // Allow walking on green areas (high green, low red and blue)
+        boolean isGreenArea = color.getGreen() > 200 && color.getRed() < 100 && color.getBlue() < 100;
+        
+        return isWhiteArea || isGreenArea;
+    }
+
 @Override
 public void update() {
     if (isTeleporting) return; // Jangan update saat teleport animasi
@@ -148,19 +184,33 @@ public void update() {
         int dx = targetX - x;
         int dy = targetY - y;
 
+        // Try to move in X direction
         if (Math.abs(dx) > 0) {
-            int step = Math.min(speed, Math.abs(dx));
-            x += (dx > 0) ? step : -step;
-            arah = dx > 0 ? "kanan" : "kiri";
-        } else if (Math.abs(dy) > 0) {
-            int step = Math.min(speed, Math.abs(dy));
-            y += (dy > 0) ? step : -step;
-            arah = dy > 0 ? "bawah" : "atas";
+            int nextX = x + ((dx > 0) ? Math.min(speed, Math.abs(dx)) : -Math.min(speed, Math.abs(dx)));
+            // Check if next position is walkable
+            if (isWalkable(nextX + width/2, y + height/2)) {
+                x = nextX;
+                arah = dx > 0 ? "kanan" : "kiri";
+            }
+        }
+        
+        // Try to move in Y direction
+        if (Math.abs(dy) > 0) {
+            int nextY = y + ((dy > 0) ? Math.min(speed, Math.abs(dy)) : -Math.min(speed, Math.abs(dy)));
+            // Check if next position is walkable
+            if (isWalkable(x + width/2, nextY + height/2)) {
+                y = nextY;
+                arah = dy > 0 ? "bawah" : "atas";
+            }
         }
 
+        // Check if reached target within speed tolerance
         if (Math.abs(dx) <= speed && Math.abs(dy) <= speed) {
-            x = targetX;
-            y = targetY;
+            // Only move to exact position if it's walkable
+            if (isWalkable(targetX + width/2, targetY + height/2)) {
+                x = targetX;
+                y = targetY;
+            }
             bobTrail.poll();
         }
 
@@ -180,18 +230,32 @@ public void update() {
     if (isMovingToTarget) {
         int dx = targetX - x;
         int dy = targetY - y;
+        
+        // Try to move in X direction with collision check
         if (Math.abs(dx) > 0) {
-            int step = Math.min(speed, Math.abs(dx));
-            x += (dx > 0) ? step : -step;
-            arah = dx > 0 ? "kanan" : "kiri";
-        } else if (Math.abs(dy) > 0) {
-            int step = Math.min(speed, Math.abs(dy));
-            y += (dy > 0) ? step : -step;
-            arah = dy > 0 ? "bawah" : "atas";
+            int nextX = x + ((dx > 0) ? Math.min(speed, Math.abs(dx)) : -Math.min(speed, Math.abs(dx)));
+            if (isWalkable(nextX + width/2, y + height/2)) {
+                x = nextX;
+                arah = dx > 0 ? "kanan" : "kiri";
+            }
         }
+        
+        // Try to move in Y direction with collision check
+        if (Math.abs(dy) > 0) {
+            int nextY = y + ((dy > 0) ? Math.min(speed, Math.abs(dy)) : -Math.min(speed, Math.abs(dy)));
+            if (isWalkable(x + width/2, nextY + height/2)) {
+                y = nextY;
+                arah = dy > 0 ? "bawah" : "atas";
+            }
+        }
+        
+        // Check if we've reached the target
         if (Math.abs(dx) <= speed && Math.abs(dy) <= speed) {
-            x = targetX;
-            y = targetY;
+            // Only set exact position if walkable
+            if (isWalkable(targetX + width/2, targetY + height/2)) {
+                x = targetX;
+                y = targetY;
+            }
             isMovingToTarget = false;
             if (teleportDelayTimer == null && !isTeleporting) {
                 teleportDelayTimer = new Timer(2000, new ActionListener() {
@@ -217,24 +281,35 @@ public void update() {
         int dx = targetX - x;
         int dy = targetY - y;
 
+        // Try to move in X direction with collision check
         if (Math.abs(dx) > 0) {
-            int step = Math.min(speed, Math.abs(dx));
-            x += (dx > 0) ? step : -step;
-            arah = dx > 0 ? "kanan" : "kiri";
-        } else if (Math.abs(dy) > 0) {
-            int step = Math.min(speed, Math.abs(dy));
-            y += (dy > 0) ? step : -step;
-            arah = dy > 0 ? "bawah" : "atas";
+            int nextX = x + ((dx > 0) ? Math.min(speed, Math.abs(dx)) : -Math.min(speed, Math.abs(dx)));
+            if (isWalkable(nextX + width/2, y + height/2)) {
+                x = nextX;
+                arah = dx > 0 ? "kanan" : "kiri";
+            }
+        }
+        
+        // Try to move in Y direction with collision check
+        if (Math.abs(dy) > 0) {
+            int nextY = y + ((dy > 0) ? Math.min(speed, Math.abs(dy)) : -Math.min(speed, Math.abs(dy)));
+            if (isWalkable(x + width/2, nextY + height/2)) {
+                y = nextY;
+                arah = dy > 0 ? "bawah" : "atas";
+            }
         }
 
+        // Check if reached target
         if (Math.abs(dx) <= speed && Math.abs(dy) <= speed) {
-            x = targetX;
-            y = targetY;
+            // Only set exact position if walkable
+            if (isWalkable(targetX + width/2, targetY + height/2)) {
+                x = targetX;
+                y = targetY;
+            }
             patrolIndex = (patrolIndex + 1) % patrolPoints.length;
         }
     }
 }
-// ...existing code...
 // ...existing code...
 
     private void startTeleport() {
