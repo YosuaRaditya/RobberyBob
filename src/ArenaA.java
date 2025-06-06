@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 public class ArenaA extends Arena {
 
@@ -24,6 +25,11 @@ public class ArenaA extends Arena {
         Polisi polisi = new Polisi(500, 170, 70, 70, "RobberyBob/Assets/polisi.png", patrol);
         polisi.setTargetBob(bob); // <-- ini penting!
         penjagaList.add(polisi);
+
+        // TUNDA setCollisionMap sampai panel sudah siap
+        SwingUtilities.invokeLater(() -> {
+            polisi.setCollisionMap(collisionMap, getWidth(), getHeight());
+        });
     }
 
     public static List<Item> getBarangArenaA() {
