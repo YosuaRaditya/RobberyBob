@@ -19,7 +19,7 @@ public class HomePanel extends JPanel {
         this.parentFrame = frame;
 
         try {
-            background = ImageIO.read(new File("RobberyBob/Assets/bgHome.png"));
+            background = ImageIO.read(new File("RobberyBob/Assets/bgHome.jpg"));
             arenaA = ImageIO.read(new File("RobberyBob/Assets/arenaA.png"));
             arenaB = ImageIO.read(new File("RobberyBob/Assets/arenaB.png"));
             arenaC = ImageIO.read(new File("RobberyBob/Assets/arenaC.png"));
@@ -62,7 +62,7 @@ public class HomePanel extends JPanel {
                     frame.revalidate();
                     frame.repaint();
                     frame.getContentPane().requestFocusInWindow();  // PENTING
-                }
+                } 
             }
         });
     } 

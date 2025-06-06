@@ -19,8 +19,8 @@ public class RobberyBob {
     private int smokeIndex = 0;
     // Use float for smoother movement
     private float xPos, yPos;   
-    private int x, y; // Integer positions for rendering
-    private int width = 170, height = 170;
+    public int x, y;
+    public int width = 170, height = 170;
     private String arah = "kanan";
     private boolean isMoving = false;
     private boolean isHiding = false;
@@ -31,9 +31,13 @@ public class RobberyBob {
     private Timer smokeTimer;
     private Timer movementTimer;
     private boolean hasExtraItem = false;
+    private boolean hasFinished = false;
+
     private Runnable onLevelComplete;
+    private Runnable onFinish;
+
     private int visibilityRadius = 150;
-    
+
     // Stamina system variables
     private float maxStamina = 100.0f;
     private float currentStamina = 100.0f;
@@ -41,7 +45,7 @@ public class RobberyBob {
     private float staminaRegenRate = 0.2f; // How fast stamina regenerates
     private boolean isRunning = false; // Track if player is running
     private Timer staminaTimer; // Timer to handle stamina changes
-    
+
     // Movement smoothing variables
     private float moveSpeedNormal = 2.5f;
     private float moveSpeedFast = 5.0f;
@@ -57,6 +61,13 @@ public class RobberyBob {
     private BufferedImage currentCollisionMap;
     private int currentPanelW;
     private int currentPanelH;
+
+    private int pendingGold = 0;
+
+    public void setOnFinish(Runnable onFinish) {
+        this.onFinish = onFinish;
+    }
+
 
     public RobberyBob(int startX, int startY) {
         this.x = startX;
@@ -186,11 +197,10 @@ public class RobberyBob {
         this.currentPanelH = panelH;
         
         keysPressed.add(keyCode);
-        
         // Toggle hiding state when 'I' is pressed and in hiding area
         if (keyCode == KeyEvent.VK_I && inHidingArea) {
             isHiding = !isHiding;
-            
+
             // Start smoke animation when changing hiding state
             smokeIndex = 0; // Reset to start of animation
             isPlayingSmoke = true; // Mark that we're playing the animation
@@ -199,6 +209,46 @@ public class RobberyBob {
             }
             return;
         }
+
+        // Movement logic
+        isMoving = true;
+
+        int dx = 0, dy = 0;
+
+        if (keysPressed.contains(KeyEvent.VK_W) && keysPressed.contains(KeyEvent.VK_D) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = 10; dy = -10; arah = "kanan_atas";
+        } else if (keysPressed.contains(KeyEvent.VK_W) && keysPressed.contains(KeyEvent.VK_A) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = -10; dy = -10; arah = "kiri_atas";
+        } else if (keysPressed.contains(KeyEvent.VK_S) && keysPressed.contains(KeyEvent.VK_D) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = 10; dy = 10; arah = "kanan_bawah";
+        } else if (keysPressed.contains(KeyEvent.VK_S) && keysPressed.contains(KeyEvent.VK_A) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = -10; dy = 10; arah = "kiri_bawah";
+        } else if (keysPressed.contains(KeyEvent.VK_W) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = 0; dy = -10; arah = "atas";
+        } else if (keysPressed.contains(KeyEvent.VK_S) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = 0; dy = 10; arah = "bawah";
+        } else if (keysPressed.contains(KeyEvent.VK_A) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = -10; dy = 0; arah = "kiri";
+        } else if (keysPressed.contains(KeyEvent.VK_D) && keysPressed.contains(KeyEvent.VK_SHIFT)) {
+            dx = 10; dy = 0; arah = "kanan";
+        } else if (keysPressed.contains(KeyEvent.VK_W) && keysPressed.contains(KeyEvent.VK_D)) {
+            dx = 5; dy = -5; arah = "kanan_atas";
+        } else if (keysPressed.contains(KeyEvent.VK_W) && keysPressed.contains(KeyEvent.VK_A)) {
+            dx = -5; dy = -5; arah = "kiri_atas";
+        } else if (keysPressed.contains(KeyEvent.VK_S) && keysPressed.contains(KeyEvent.VK_D)) {
+            dx = 5; dy = 5; arah = "kanan_bawah";
+        } else if (keysPressed.contains(KeyEvent.VK_S) && keysPressed.contains(KeyEvent.VK_A)) {
+            dx = -5; dy = 5; arah = "kiri_bawah";
+        } else if (keysPressed.contains(KeyEvent.VK_W)) {
+            dx = 0; dy = -5; arah = "atas";
+        } else if (keysPressed.contains(KeyEvent.VK_S)) {
+            dx = 0; dy = 5; arah = "bawah";
+        } else if (keysPressed.contains(KeyEvent.VK_A)) {
+            dx = -5; dy = 0; arah = "kiri";
+        } else if (keysPressed.contains(KeyEvent.VK_D)) {
+            dx = 5; dy = 0; arah = "kanan";
+        }
+
         
         // Don't move if hiding
         if (isHiding) {
@@ -303,10 +353,10 @@ public class RobberyBob {
     }
     
     // Draw stamina bar
-    public void drawStaminaBar(Graphics g) {
+    public void drawStaminaBar(Graphics g, Component c) {
         int barWidth = 200;
         int barHeight = 15;
-        int x = 20;
+        int x = c.getWidth() - barWidth - 20; // Position at the right with 20px margin
         int y = 70;
         
         // Draw outline
@@ -364,9 +414,6 @@ public class RobberyBob {
         }
     }
 
-    public void setOnLevelComplete(Runnable callback) {
-        this.onLevelComplete = callback;
-    }
 
     public void handleKeyReleased(int keyCode) {
         keysPressed.remove(keyCode);
@@ -430,7 +477,7 @@ public class RobberyBob {
     private boolean isWalkable(int px, int py, BufferedImage map, int panelW, int panelH) {
         // If map isn't provided, return false to be safe
         if (map == null) {
-            return false;
+            return false; 
         }
         
         int imgW = map.getWidth();
@@ -446,10 +493,12 @@ public class RobberyBob {
         
         // Kriteria untuk merah muda (233, 73, 75):
         if (color.getRed() > 220 && color.getGreen() < 80 && color.getBlue() < 80) {
-            if (hasExtraItem()) {
-                System.out.println("Mantap"); // Muncul hanya jika bawa item Extra
+            if (hasExtraItem() && !hasFinished) { // <-- tambahkan !hasFinished
+                hasFinished = true;               // <-- set sudah finish
+                System.out.println("Mantap");
+                if (onFinish != null) onFinish.run();
             }
-            return false; // Blokir pergerakan
+            return false;
         }
 
         // Allow walking on white areas (RGB all > 200)
@@ -483,6 +532,7 @@ public class RobberyBob {
         // Detect green area (high green, low red and blue)
         return color.getGreen() > 200 && color.getRed() < 100 && color.getBlue() < 100;
     }
+
 
     public Rectangle getBounds() {
         return new Rectangle(x, y, width, height);
@@ -570,5 +620,29 @@ public class RobberyBob {
     
     public boolean isInHidingArea() {
         return inHidingArea;
+    }
+
+    public void setPendingGold(int gold) {
+        this.pendingGold = gold;
+    }
+
+    public int getPendingGold() {
+        return this.pendingGold;
+    }
+
+    public boolean hasPendingGold() {
+        return this.pendingGold > 0;
+    }
+
+    public void clearPendingGold() {
+        this.pendingGold = 0;
+    }
+
+    public void addPendingGold(int value) {
+        this.pendingGold += value;
+    }
+
+    public void resetPendingGold() {
+        this.pendingGold = 0;
     }
 }
