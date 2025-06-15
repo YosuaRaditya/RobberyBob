@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 public class ArenaC extends Arena {
 
@@ -13,6 +14,7 @@ public class ArenaC extends Arena {
             getBarangArenaC()  // harus static method supaya bisa dipanggil di sini
         );
     }
+
     public static List<Item> getBarangArenaC() {
         List<Item> items = new ArrayList<>();
         items.add(new Tas(500, 300));

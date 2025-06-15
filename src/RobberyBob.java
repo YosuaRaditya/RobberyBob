@@ -485,7 +485,6 @@ public class RobberyBob {
     }
 
     private boolean isWalkable(int px, int py, BufferedImage map, int panelW, int panelH) {
-        // If map isn't provided, return false to be safe
         if (map == null) {
             return false; 
         }
@@ -501,23 +500,26 @@ public class RobberyBob {
 
         Color color = new Color(map.getRGB(scaledX, scaledY));
         
-        // Kriteria untuk merah muda (233, 73, 75):
-        if (color.getRed() > 220 && color.getGreen() < 80 && color.getBlue() < 80) {
-            if (hasExtraItem() && !hasFinished) { // <-- tambahkan !hasFinished
-                hasFinished = true;               // <-- set sudah finish
-                System.out.println("Mantap");
-                if (onFinish != null) onFinish.run();
-            }
+        // Kriteria untuk area hitam (tidak bisa dilewati)
+        boolean isBlackArea = color.getRed() < 50 && color.getGreen() < 50 && color.getBlue() < 50;
+        if (isBlackArea) {
             return false;
         }
 
-        // Allow walking on white areas (RGB all > 200)
+        // Kriteria untuk merah muda (trigger finish jika punya item)
+        if (color.getRed() > 220 && color.getGreen() < 80 && color.getBlue() < 80) {
+            if (hasExtraItem() && !hasFinished) {
+                hasFinished = true;
+                System.out.println("Mantap");
+                if (onFinish != null) onFinish.run();
+            }
+            return true;  // Biarkan merah muda bisa dilewati
+        }
+
+        // Area putih dan hijau tetap bisa dilewati
         boolean isWhiteArea = color.getRed() > 200 && color.getGreen() > 200 && color.getBlue() > 200;
-        
-        // Allow walking on green areas (high green, low red and blue)
         boolean isGreenArea = color.getGreen() > 200 && color.getRed() < 100 && color.getBlue() < 100;
         
-        // Return true if either white area or green area
         return isWhiteArea || isGreenArea;
     }
 

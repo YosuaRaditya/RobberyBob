@@ -22,8 +22,21 @@ public class ArenaA extends Arena {
         cctvRights.add(true);
 
         int[][] patrol = { {500, 170}, {700, 170}};
-        Polisi polisi = new Polisi(500, 170, 100, 100, "RobberyBob/Assets/Upin.png", patrol);
+        Polisi polisi = new Polisi(500, 170, 70, 70, "RobberyBob/Assets/polisi.png", patrol);
         polisi.setTargetBob(bob); // <-- ini penting!
+
+        // Tambahkan di sini
+        polisi.setOnBobCaught(() -> {
+            stopTimer();
+            SwingUtilities.invokeLater(() -> {
+                PoliceInteractionPanel policePanel = new PoliceInteractionPanel(parentFrame, this);
+                policePanel.setBounds(0, 0, getWidth(), getHeight());
+                parentFrame.setContentPane(policePanel);
+                parentFrame.revalidate();
+                parentFrame.repaint();
+            });
+        });
+
         penjagaList.add(polisi);
 
         // TUNDA setCollisionMap sampai panel sudah siap

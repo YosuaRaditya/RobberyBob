@@ -29,6 +29,7 @@ public abstract class Penjaga {
     protected boolean isCCTVTriggered = false;
     protected BufferedImage collisionMap;
     protected int panelW, panelH;
+    protected Runnable onBobCaught;
 
     public void setCollisionMap(BufferedImage map, int panelW, int panelH) {
         this.collisionMap = map;
@@ -65,6 +66,10 @@ public abstract class Penjaga {
                 System.out.println("Gagal load teleport sprite: " + e.getMessage());
             }
         }
+    }
+
+    public void setOnBobCaught(Runnable onBobCaught) {
+        this.onBobCaught = onBobCaught;
     }
 
     public void moveTo(int x, int y) {
@@ -182,8 +187,17 @@ public abstract class Penjaga {
         if (targetBob != null) {
             Rectangle polisiRect = new Rectangle(x, y, width, height);
             Rectangle bobRect = new Rectangle(targetBob.x, targetBob.y, targetBob.width, targetBob.height);
+            // Cek overlap rectangle
             if (polisiRect.intersects(bobRect) && !targetBob.isHiding()) {
-                System.out.println("mantabbb");
+                // Cek jarak pusat
+                int polisiCenterX = x + width / 2;
+                int polisiCenterY = y + height / 2;
+                int bobCenterX = targetBob.x + targetBob.width / 2;
+                int bobCenterY = targetBob.y + targetBob.height / 2;
+                double distance = Math.hypot(polisiCenterX - bobCenterX, polisiCenterY - bobCenterY);
+                if (distance < 40) { // Atur threshold sesuai kebutuhan
+                    if (onBobCaught != null) onBobCaught.run();
+                }
             }
         }
         return;
