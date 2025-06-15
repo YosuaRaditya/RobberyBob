@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -75,6 +76,27 @@ public class Arena extends JPanel {
         }
     }
 
+    public void handleRottenDonutUse() {
+        if (bob != null) {
+            if (bob.hasRottenDonut()) {
+                bob.useRottenDonut();
+                
+                for (Penjaga penjaga : penjagaList) {
+                    if (penjaga instanceof Polisi) {
+                        Polisi polisi = (Polisi) penjaga;
+                        
+                        polisi.makeUnconscious();
+                    }
+                }
+            }
+        }
+    }
+
+    public void handleInvisibilityPotionUse() {
+        if (bob != null) {
+            bob.useInvisibilityPotion();
+        }
+    }
 
     public Arena(String mapPath, String collisionPath, int startX, int startY, JFrame parentFrame, List<Item> itemList) {
         this.itemList = itemList;
@@ -107,11 +129,20 @@ public class Arena extends JPanel {
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_I && bob.isInHidingArea()) {
-                    // Toggle hiding state when 'I' is pressed and in hiding area
-                    bob.setHiding(!bob.isHiding());
-                } else {
-                    bob.handleKeyPressed(e.getKeyCode(), collisionMap, getWidth(), getHeight());
+                int keyCode = e.getKeyCode();
+                
+                // Handle special abilities
+                if (keyCode == KeyEvent.VK_R) {
+                    // Always call handleRottenDonutUse regardless of bob.hasRottenDonut()
+                    // This allows us to debug with the print statements in the method
+                    handleRottenDonutUse();
+                } else if (keyCode == KeyEvent.VK_P) {
+                    handleInvisibilityPotionUse();
+                }
+                
+                // Pass the keypress to Bob for regular movement handling
+                if (bob != null) {
+                    bob.handleKeyPressed(keyCode, collisionMap, getWidth(), getHeight());
                 }
                 repaint();
             }
@@ -196,7 +227,7 @@ public class Arena extends JPanel {
     private void initPauseButton(JFrame parentFrame) {
         try {
             pauseButton = new JButton();
-            pauseButton.setBounds(20, 45, 60, 60);
+            pauseButton.setBounds(20, 80, 60, 60);
             pauseButton.setContentAreaFilled(false);
             pauseButton.setBorderPainted(false);
             pauseButton.setFocusable(false);
@@ -265,7 +296,7 @@ public class Arena extends JPanel {
     private void initInventoryButton(JFrame parentFrame){
         try {
             inventoryButton = new JButton();
-            inventoryButton.setBounds(100, 45, 60, 60);
+            inventoryButton.setBounds(100, 80, 60, 60);
             inventoryButton.setContentAreaFilled(false);
             inventoryButton.setBorderPainted(false);
             inventoryButton.setFocusable(false);
@@ -318,7 +349,10 @@ public class Arena extends JPanel {
             g.setColor(Color.GREEN);
             g.drawString("Press 'I' to hide/unhide", 10, 40);
         }
-
+        g.setColor(Color.GREEN);
+        g.drawString("Press 'R' to incapacitates guards", 10, 60);
+        g.setColor(Color.GREEN);
+        g.drawString("Press 'P' to turns Bob invisible", 10,75);
         // Draw stamina bar
         bob.drawStaminaBar(g);
 
@@ -333,7 +367,13 @@ public class Arena extends JPanel {
              // Cek collision dengan item
             for (int i = 0; i < itemList.size(); i++) {
                 Item item = itemList.get(i);
-                if (bob.getDetectionCircle().intersects(item.getBounds())) {
+                int detectionRadius = 40 + (bob.getGrabAbilityLevel() - 1) * 10;
+                Ellipse2D detectionCircle = new Ellipse2D.Double(
+                    bob.x + bob.width / 2 - detectionRadius, 
+                    bob.y + bob.height / 2 - detectionRadius,
+                    detectionRadius * 2, detectionRadius * 2);
+                
+                if (detectionCircle.intersects(item.getBounds())) {
                     if ("Extra".equals(item.getJenis())) {
                         bob.setHasExtraItem(true);
                     }
@@ -408,13 +448,14 @@ public class Arena extends JPanel {
         return !(has_neg && has_pos);
     }
 
-
     public int getTotalItemCount() {
         return totalItemCount; // simpan jumlah item awal di field ini
     }
+
     public int getCollectedItemCount() {
         return collectedItemCount; // simpan jumlah item yang sudah diambil di field ini
     }
+
     public int getGoldCollectedThisArena() {
         return goldCollectedThisArena; // simpan gold yang didapat di arena ini
     }
