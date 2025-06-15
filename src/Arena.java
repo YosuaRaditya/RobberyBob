@@ -112,7 +112,8 @@ public class Arena extends JPanel {
             System.out.println("Error loading map: " + e.getMessage());
         }
 
-        bob = new RobberyBob(startX, startY);
+        this.bob = GameData.sharedBob;
+        this.bob.setPosition(startX, startY);
         startTimer();
 
         bob.setOnFinish(() -> {

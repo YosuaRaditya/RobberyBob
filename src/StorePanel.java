@@ -31,6 +31,10 @@ public class StorePanel extends JPanel{
     public StorePanel(JFrame frame, RobberyBob bob) {
         this.parentFrame = frame;
         this.bob = bob;
+        if (this.bob == null) {
+            this.bob = GameData.sharedBob;
+        }
+        
         try{
             background = ImageIO.read(new File("RobberyBob/Assets/bg.jpg"));
         }catch (IOException e) {
@@ -81,10 +85,10 @@ public class StorePanel extends JPanel{
                                         bob.increaseSpeed(0.5f);
                                         break;
                                     case 3:
-                                        bob.setHasRottenDonut(true);
+                                        GameData.sharedBob.setHasRottenDonut(true);
                                         break;
                                     case 4:
-                                        bob.setHasInvisibilityPotion(true);
+                                        GameData.sharedBob.setHasInvisibilityPotion(true);
                                         break;
                                 }
                             }

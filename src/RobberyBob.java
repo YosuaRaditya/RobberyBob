@@ -746,4 +746,11 @@ public class RobberyBob {
     public int getInvisibilityPotionCount() {
         return invisibilityPotionCount;
     }
+
+    public void setPosition(int x, int y) {
+        this.x = x;
+        this.y = y;
+        this.xPos = x;
+        this.yPos = y;
+    }
 }
