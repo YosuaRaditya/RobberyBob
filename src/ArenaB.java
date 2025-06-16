@@ -15,7 +15,11 @@ public class ArenaB extends Arena {
     }
     public static List<Item> getBarangArenaB() {
         List<Item> items = new ArrayList<>();
-        items.add(new Tas(500, 300));
+        items.add(new Kunci(946, 394));
+        items.add(new Tas(390,270));
+        items.add(new Lampu(864, 268));
+        items.add(new Handphone(466,478));
+        items.add(new Buku(749, 78));
         return items;
     }
 }
