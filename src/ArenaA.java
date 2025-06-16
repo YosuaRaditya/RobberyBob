@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 public class ArenaA extends Arena {
 
@@ -21,9 +22,27 @@ public class ArenaA extends Arena {
         cctvRights.add(true);
 
         int[][] patrol = { {500, 170}, {700, 170}};
-        Polisi polisi = new Polisi(500, 170, 70, 70, "RobberyBob/Assets/polisi.png", patrol, this);
+        Polisi polisi = new Polisi(500, 170, 70, 70, "RobberyBob/Assets/polisi.png", patrol);
         polisi.setTargetBob(bob); // <-- ini penting!
+
+        // Tambahkan di sini
+        polisi.setOnBobCaught(() -> {
+            stopTimer();
+            SwingUtilities.invokeLater(() -> {
+                PoliceInteractionPanel policePanel = new PoliceInteractionPanel(parentFrame, this);
+                policePanel.setBounds(0, 0, getWidth(), getHeight());
+                parentFrame.setContentPane(policePanel);
+                parentFrame.revalidate();
+                parentFrame.repaint();
+            });
+        });
+
         penjagaList.add(polisi);
+
+        // TUNDA setCollisionMap sampai panel sudah siap
+        SwingUtilities.invokeLater(() -> {
+            polisi.setCollisionMap(collisionMap, getWidth(), getHeight());
+        });
     }
 
     public static List<Item> getBarangArenaA() {
@@ -32,6 +51,7 @@ public class ArenaA extends Arena {
         items.add(new Kalung(800, 543));
         items.add(new Emas(126, 360));
         items.add(new Uang(310, 275));
+        items.add(new Dompet(290, 110));
         return items;
     }
 }

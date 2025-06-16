@@ -417,28 +417,27 @@ public class Arena extends JPanel {
             }
             g2d.fillPolygon(xPoints, yPoints, 3);
             g2d.dispose();
-
         }
 
         if (bobDetectedByCCTV && !cctvTriggered && !penjagaList.isEmpty()) {
-    long now = System.currentTimeMillis();
-    if (now - lastCCTVTriggerTime > CCTV_TRIGGER_COOLDOWN) {
-        cctvTriggered = true;
-        lastCCTVTriggerTime = now;
-        // Trigger polisi pertama di list ke posisi terakhir Bob
-        Penjaga penjaga = penjagaList.get(0);
-        if (penjaga instanceof Polisi) {
-            // Ambil posisi tengah Bob saat CCTV trigger
-            int bobCenterX = bob.x + bob.width / 2;
-            int bobCenterY = bob.y + bob.height / 2;
-            ((Polisi)penjaga).moveTo(bobCenterX - penjaga.getWidth() / 2, bobCenterY - penjaga.getHeight() / 2);
+            long now = System.currentTimeMillis();
+            if (now - lastCCTVTriggerTime > CCTV_TRIGGER_COOLDOWN) {
+                cctvTriggered = true;
+                lastCCTVTriggerTime = now;
+                // Trigger polisi pertama di list ke posisi terakhir Bob
+                Penjaga penjaga = penjagaList.get(0);
+                if (penjaga instanceof Polisi) {
+                    // Ambil posisi tengah Bob saat CCTV trigger
+                    int bobCenterX = bob.x + bob.width / 2;
+                    int bobCenterY = bob.y + bob.height / 2;
+                    ((Polisi)penjaga).moveTo(bobCenterX - penjaga.getWidth() / 2, bobCenterY - penjaga.getHeight() / 2);
+                }
+                // Reset trigger setelah delay
+                Timer resetTimer = new Timer((int)CCTV_TRIGGER_COOLDOWN, e -> cctvTriggered = false);
+                resetTimer.setRepeats(false);
+                resetTimer.start();
+            }
         }
-        // Reset trigger setelah delay
-        Timer resetTimer = new Timer((int)CCTV_TRIGGER_COOLDOWN, e -> cctvTriggered = false);
-        resetTimer.setRepeats(false);
-        resetTimer.start();
-    }
-}
     }
 
     protected boolean isPointInTriangle(int px, int py, int[] x, int[] y) {
