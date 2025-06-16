@@ -51,6 +51,7 @@ public class ArenaA extends Arena {
         items.add(new Kalung(800, 543));
         items.add(new Emas(126, 360));
         items.add(new Uang(310, 275));
+        items.add(new Dompet(290, 110));
         return items;
     }
 }
