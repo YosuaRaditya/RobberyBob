@@ -3,6 +3,10 @@ import javax.swing.*;
 public class App {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
+            GameData.audioPlayer = new MusicPlayer();
+            GameData.audioOn = true;
+            GameData.audioPlayer.play("RobberyBob/Assets/Trouble Makers (Loopable).wav");
+
             JFrame frame = new JFrame("Robbery Game");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setResizable(false);

@@ -15,6 +15,8 @@ import javax.swing.JPanel;
 public class OptionsPanel extends JPanel{
     private JFrame parentFrame;
     private BufferedImage background, playIcon, audioOnIcon, audioOffIcon;
+    private MusicPlayer musicPlayer;
+    private final String musicPath = "RobberyBob/Assets/Trouble Makers (Loopable).wav";
     private Rectangle playButton = new Rectangle(20, 20, 50, 80);
     private Rectangle audioButton;
     private boolean audioOn = true;
@@ -44,11 +46,19 @@ public class OptionsPanel extends JPanel{
                     return;
                 }
                 if (audioButton != null && audioButton.contains(e.getPoint())) {
-                    audioOn = !audioOn;
+                    audioOn = !audioOn; 
+                    GameData.audioOn = audioOn;
+
+                    if (audioOn) {
+                        GameData.audioPlayer.play("RobberyBob/Assets/Trouble Makers (Loopable).wav");
+                    } else {
+                        GameData.audioPlayer.stop();
+                    }
                     repaint();
                 }
             }
         });
+        this.audioOn = GameData.audioOn;
     }
     @Override
     protected void paintComponent(Graphics g) {
