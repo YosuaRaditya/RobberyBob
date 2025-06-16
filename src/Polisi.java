@@ -124,14 +124,9 @@ public class Polisi extends Penjaga {
             return;
         } 
         boolean bobDetected = false;
-        double distanceToBob = Double.MAX_VALUE;
 
         if (targetBob != null) {
-        int bobCenterX = targetBob.x + targetBob.width / 2, bobCenterY = targetBob.y + targetBob.height / 2, polisiCenterX = x + width / 2, polisiCenterY = y + height / 2;
-
-        distanceToBob = Math.hypot(bobCenterX - polisiCenterX, bobCenterY - polisiCenterY);
-
-        int rectWidth = 300, rectHeight = 250, offset = 70, rectX = x + width / 2 - offset, rectY = y + (height / 2) - (rectHeight / 2);
+        int bobCenterX = targetBob.x + targetBob.width / 2, bobCenterY = targetBob.y + targetBob.height / 2, polisiCenterX = x + width / 2, polisiCenterY = y + height / 2, rectWidth = 300, rectHeight = 250, offset = 70, rectX = x + width / 2 - offset, rectY = y + (height / 2) - (rectHeight / 2);
 
         switch (arah) {
             case "kanan":
@@ -321,12 +316,6 @@ public class Polisi extends Penjaga {
 
     @Override
     public void draw(Graphics g) {
-        if (isUnconscious && unconsciousImage != null) {
-            // Draw unconscious police
-            g.drawImage(unconsciousImage, x, y, width, height, null);
-            return;
-        }
-        
         // Gambar area deteksi (persegi panjang merah transparan)
         Graphics2D g2dCone = (Graphics2D) g.create();
         

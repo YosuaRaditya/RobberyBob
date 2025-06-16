@@ -467,16 +467,34 @@ public class RobberyBob {
                 gScaled.drawImage(sprites[spriteIndex], 0, 0, width, height, null);
                 gScaled.dispose();
 
-                double angle = switch (arah) {
-                    case "kanan" -> Math.PI / 2;
-                    case "kiri" -> -Math.PI / 2;
-                    case "bawah" -> Math.PI;
-                    case "kiri_atas" -> Math.toRadians(-45);
-                    case "kiri_bawah" -> Math.toRadians(-135);
-                    case "kanan_atas" -> Math.toRadians(45);
-                    case "kanan_bawah" -> Math.toRadians(135);
-                    default -> 0;
-                };
+
+                double angle = 0;
+switch (arah) {
+    case "kanan":
+        angle = Math.PI / 2;
+        break;
+    case "kiri":
+        angle = -Math.PI / 2;
+        break;
+    case "bawah":
+        angle = Math.PI;
+        break;
+    case "kiri_atas":
+        angle = Math.toRadians(-45);
+        break;
+    case "kanan_atas":
+        angle = Math.toRadians(45);
+        break;
+    case "kiri_bawah":
+        angle = Math.toRadians(-135);
+        break;
+    case "kanan_bawah":
+        angle = Math.toRadians(135);
+        break;
+    default:
+        angle = 0;
+        break;
+}
 
                 AffineTransform transform = new AffineTransform();
                 transform.translate(x + width / 2.0, y + height / 2.0);
