@@ -3,8 +3,8 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 
-public class Polisi extends Penjaga {
-    public Polisi(int x, int y, int width, int height, String imagePath, int[][] patrolPoints) {
+public class Upin extends Penjaga {
+    public Upin(int x, int y, int width, int height, String imagePath, int[][] patrolPoints) {
         super(x, y, width, height, loadImage(imagePath), patrolPoints);
     }
 
@@ -12,7 +12,7 @@ public class Polisi extends Penjaga {
         try {
             return ImageIO.read(new File(path));
         } catch (IOException e) {
-            System.out.println("Error loading polisi: " + e.getMessage());
+            System.out.println("Error loading Upin: " + e.getMessage());
             return null;
         }
     }

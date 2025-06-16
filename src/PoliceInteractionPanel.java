@@ -23,6 +23,7 @@ public class PoliceInteractionPanel extends JPanel{
     public PoliceInteractionPanel(JFrame parentFrame, Arena arena) {
         this.parentFrame = parentFrame;
         this.arena = arena;
+        this.bob = arena.bob;
         setLayout(null);
         try {
             background = ImageIO.read(new File("RobberyBob/Assets/PoliceInteractionPanel.png"));

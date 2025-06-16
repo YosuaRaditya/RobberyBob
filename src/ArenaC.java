@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 public class ArenaC extends Arena {
 
@@ -13,9 +14,15 @@ public class ArenaC extends Arena {
             getBarangArenaC()  // harus static method supaya bisa dipanggil di sini
         );
     }
+
     public static List<Item> getBarangArenaC() {
         List<Item> items = new ArrayList<>();
-        items.add(new Tas(500, 300));
+        items.add(new Laptop(280, 85));
+        items.add(new Vas(766, 438));
+        items.add(new Kalung(1078, 492));
+        items.add(new Uang(197, 490));
+        items.add(new Handphone(493, 166));
+        items.add(new Buku(900, 110));
         return items;
     }
 }
