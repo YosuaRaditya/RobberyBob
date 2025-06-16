@@ -22,7 +22,7 @@ public class ArenaA extends Arena {
         cctvRights.add(true);
 
         int[][] patrol = { {500, 170}, {700, 170}};
-        Polisi polisi = new Polisi(500, 170, 70, 70, "RobberyBob/Assets/polisi.png", patrol, this);
+        Polisi polisi = new Polisi(500, 170, 70, 70, "RobberyBob/Assets/polisi.png", patrol);
         polisi.setTargetBob(bob); // <-- ini penting!
 
         // Tambahkan di sini

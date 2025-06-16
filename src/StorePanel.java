@@ -1,4 +1,3 @@
-
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -16,13 +15,15 @@ public class StorePanel extends JPanel{
     private JFrame parentFrame;
     private BufferedImage background;
     private int hoveredAbility = -1;
-    private final Rectangle[] abilityButtons = new Rectangle[3];
+    private final Rectangle[] abilityButtons = new Rectangle[5];
     private final String[] abilityDescriptions = {
         "RobberyBob/Assets/StaminaDescription.png",
         "RobberyBob/Assets/GrabDescription.png",
-        "RobberyBob/Assets/SpeedDescription.png"
+        "RobberyBob/Assets/SpeedDescription.png",
+        "RobberyBob/Assets/RottenDonutDescription.png",
+        "RobberyBob/Assets/InvisibilityPotionDescription.png"
     };
-    private final int[] abilityPrices = {100, 150, 200};
+    private final int[] abilityPrices = {100, 150, 200, 30, 100};
     private RobberyBob bob;
     private BufferedImage playIcon;
     private Rectangle playButton = new Rectangle(20, 20, 50, 80);
@@ -30,6 +31,10 @@ public class StorePanel extends JPanel{
     public StorePanel(JFrame frame, RobberyBob bob) {
         this.parentFrame = frame;
         this.bob = bob;
+        if (this.bob == null) {
+            this.bob = GameData.sharedBob;
+        }
+        
         try{
             background = ImageIO.read(new File("RobberyBob/Assets/bg.jpg"));
         }catch (IOException e) {
@@ -79,6 +84,12 @@ public class StorePanel extends JPanel{
                                     case 2:
                                         bob.increaseSpeed(0.5f);
                                         break;
+                                    case 3:
+                                        GameData.sharedBob.setHasRottenDonut(true);
+                                        break;
+                                    case 4:
+                                        GameData.sharedBob.setHasInvisibilityPotion(true);
+                                        break;
                                 }
                             }
                             repaint();
@@ -118,57 +129,78 @@ public class StorePanel extends JPanel{
             e.printStackTrace();
         }
         try {
-            BufferedImage abilitiesImg = ImageIO.read(new File("RobberyBob/Assets/AbilitiesTXT.png"));
-            g.drawImage(abilitiesImg, storeX + 375, 90, 200, 40, null);
-        }catch (IOException e) {
-            System.out.println("Gagal memuat gambar AbilitiesTXT: " + e.getMessage());
-            e.printStackTrace();
-        }
-        try {
             BufferedImage staminaIcon = ImageIO.read(new File("RobberyBob/Assets/StaminaIcon.png"));
-            g.drawImage(staminaIcon, storeX, 150, 100, 100, null); 
+            g.drawImage(staminaIcon, storeX, 90, 100, 100, null); 
         } catch (Exception e) {
              System.out.println("Gagal memuat gambar StaminaIcon: " + e.getMessage());
             e.printStackTrace();
         }
         try {
             BufferedImage staminaTXT = ImageIO.read(new File("RobberyBob/Assets/StaminaTXT.png"));
-            g.drawImage(staminaTXT, storeX + 100, 150, 50, 50, null); 
+            g.drawImage(staminaTXT, storeX + 100, 90, 50, 50, null); 
         } catch (Exception e) {
              System.out.println("Gagal memuat gambar StaminaTXT: " + e.getMessage());
             e.printStackTrace();
         }
         try {
             BufferedImage grabIcon = ImageIO.read(new File("RobberyBob/Assets/GrabIcon.png"));
-            g.drawImage(grabIcon, storeX, 250, 100, 100, null); 
+            g.drawImage(grabIcon, storeX, 190, 100, 100, null); 
         } catch (Exception e) {
              System.out.println("Gagal memuat gambar GrabIcon: " + e.getMessage());
             e.printStackTrace();
         }
         try {
             BufferedImage grabTXT = ImageIO.read(new File("RobberyBob/Assets/GrabTXT.png"));
-            g.drawImage(grabTXT, storeX + 100, 250, 100, 50, null); 
+            g.drawImage(grabTXT, storeX + 100, 190, 100, 50, null); 
         } catch (Exception e) {
              System.out.println("Gagal memuat gambar GrabTXT: " + e.getMessage());
             e.printStackTrace();
         }
         try {
             BufferedImage speedIcon = ImageIO.read(new File("RobberyBob/Assets/SpeedIcon.png"));
-            g.drawImage(speedIcon, storeX, 350, 100, 100, null); 
+            g.drawImage(speedIcon, storeX, 290, 100, 100, null); 
         } catch (Exception e) {
              System.out.println("Gagal memuat gambar SpeedIcon: " + e.getMessage());
             e.printStackTrace();
         }
         try {
             BufferedImage speedTXT = ImageIO.read(new File("RobberyBob/Assets/SpeedTXT.png"));
-            g.drawImage(speedTXT, storeX + 100, 350, 50, 50, null); 
+            g.drawImage(speedTXT, storeX + 100, 290, 50, 50, null); 
         } catch (Exception e) {
              System.out.println("Gagal memuat gambar SpeedTXT: " + e.getMessage());
             e.printStackTrace();
         }
-        int[] yPos = {150, 250, 350};
+        try {
+            BufferedImage rottenDonutIcon = ImageIO.read(new File("RobberyBob/Assets/RottenDonutIcon.png"));
+            g.drawImage(rottenDonutIcon, storeX, 390, 100, 100, null); 
+        } catch (Exception e) {
+             System.out.println("Gagal memuat gambar RottenDonutIcon: " + e.getMessage());
+            e.printStackTrace();
+        }
+        try {
+            BufferedImage rottenDonutTXT = ImageIO.read(new File("RobberyBob/Assets/RottenDonutTXT.png"));
+            g.drawImage(rottenDonutTXT, storeX + 100, 390, 100, 50, null); 
+        } catch (Exception e) {
+             System.out.println("Gagal memuat gambar RottenDonutTXT: " + e.getMessage());
+            e.printStackTrace();
+        }
+        try {
+            BufferedImage invisibilityPotionIcon = ImageIO.read(new File("RobberyBob/Assets/InvisibilityPotionIcon.png"));
+            g.drawImage(invisibilityPotionIcon, storeX, 490, 100, 100, null); 
+        } catch (Exception e) {
+             System.out.println("Gagal memuat gambar InvisibilityPotionIcon: " + e.getMessage());
+            e.printStackTrace();
+        }
+        try {
+            BufferedImage invisibilityPotionTXT = ImageIO.read(new File("RobberyBob/Assets/InvisibilityPotionTXT.png"));
+            g.drawImage(invisibilityPotionTXT, storeX + 100, 490, 100, 50, null); 
+        } catch (Exception e) {
+             System.out.println("Gagal memuat gambar InvisibilityPotionTXT: " + e.getMessage());
+            e.printStackTrace();
+        }
+        int[] yPos = {90, 190, 290, 390, 490};
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 5; i++) {
             abilityButtons[i] = new Rectangle(storeX, yPos[i], 100, 100);
             if (hoveredAbility == i) {
                 g.setColor(Color.BLUE);
@@ -178,7 +210,9 @@ public class StorePanel extends JPanel{
                 BufferedImage icon = ImageIO.read(new File(
                     i == 0 ? "RobberyBob/Assets/StaminaIcon.png" :
                     i == 1 ? "RobberyBob/Assets/GrabIcon.png" :
-                            "RobberyBob/Assets/SpeedIcon.png"
+                    i == 2 ? "RobberyBob/Assets/SpeedIcon.png" :
+                    i == 3 ? "RobberyBob/Assets/RottenDonutIcon.png" :
+                    "RobberyBob/Assets/InvisibilityPotionIcon.png"
                 ));
                 g.drawImage(icon, storeX, yPos[i], 100, 100, null);
             } catch (Exception e) {}
@@ -192,44 +226,72 @@ public class StorePanel extends JPanel{
         }
         try {
             BufferedImage staminaIcon = ImageIO.read(new File("RobberyBob/Assets/StaminaIcon.png"));
-            g.drawImage(staminaIcon, storeX, 150, 100, 100, null); 
+            g.drawImage(staminaIcon, storeX, 90, 100, 100, null); 
         } catch (Exception e) {
             System.out.println("Gagal memuat gambar StaminaIcon: " + e.getMessage());
             e.printStackTrace();
         }
         try {
             BufferedImage staminaTXT = ImageIO.read(new File("RobberyBob/Assets/StaminaTXT.png"));
-            g.drawImage(staminaTXT, storeX + 100, 150, 50, 50, null); 
+            g.drawImage(staminaTXT, storeX + 100, 90, 50, 50, null); 
         } catch (Exception e) {
             System.out.println("Gagal memuat gambar StaminaTXT: " + e.getMessage());
             e.printStackTrace();
         }
         try {
             BufferedImage grabIcon = ImageIO.read(new File("RobberyBob/Assets/GrabIcon.png"));
-            g.drawImage(grabIcon, storeX, 250, 100, 100, null); 
+            g.drawImage(grabIcon, storeX, 190, 100, 100, null); 
         } catch (Exception e) {
             System.out.println("Gagal memuat gambar GrabIcon: " + e.getMessage());
             e.printStackTrace();
         }
         try {
             BufferedImage grabTXT = ImageIO.read(new File("RobberyBob/Assets/GrabTXT.png"));
-            g.drawImage(grabTXT, storeX + 100, 250, 100, 50, null); 
+            g.drawImage(grabTXT, storeX + 100, 190, 100, 50, null); 
         } catch (Exception e) {
             System.out.println("Gagal memuat gambar GrabTXT: " + e.getMessage());
             e.printStackTrace();
         }
         try {
             BufferedImage speedIcon = ImageIO.read(new File("RobberyBob/Assets/SpeedIcon.png"));
-            g.drawImage(speedIcon, storeX, 350, 100, 100, null); 
+            g.drawImage(speedIcon, storeX, 290, 100, 100, null); 
         } catch (Exception e) {
             System.out.println("Gagal memuat gambar SpeedIcon: " + e.getMessage());
             e.printStackTrace();
         }
         try {
             BufferedImage speedTXT = ImageIO.read(new File("RobberyBob/Assets/SpeedTXT.png"));
-            g.drawImage(speedTXT, storeX + 100, 350, 50, 50, null); 
+            g.drawImage(speedTXT, storeX + 100, 290, 50, 50, null); 
         } catch (Exception e) {
             System.out.println("Gagal memuat gambar SpeedTXT: " + e.getMessage());
+            e.printStackTrace();
+        }
+        try {
+            BufferedImage rottenDonutIcon = ImageIO.read(new File("RobberyBob/Assets/RottenDonutIcon.png"));
+            g.drawImage(rottenDonutIcon, storeX, 390, 100, 100, null); 
+        } catch (Exception e) {
+             System.out.println("Gagal memuat gambar RottenDonutIcon: " + e.getMessage());
+            e.printStackTrace();
+        }
+        try {
+            BufferedImage rottenDonutTXT = ImageIO.read(new File("RobberyBob/Assets/RottenDonutTXT.png"));
+            g.drawImage(rottenDonutTXT, storeX + 100, 390, 100, 50, null); 
+        } catch (Exception e) {
+             System.out.println("Gagal memuat gambar RottenDonutTXT: " + e.getMessage());
+            e.printStackTrace();
+        }
+        try {
+            BufferedImage invisibilityPotionIcon = ImageIO.read(new File("RobberyBob/Assets/InvisibilityPotionIcon.png"));
+            g.drawImage(invisibilityPotionIcon, storeX, 490, 100, 100, null); 
+        } catch (Exception e) {
+             System.out.println("Gagal memuat gambar InvisibilityPotionIcon: " + e.getMessage());
+            e.printStackTrace();
+        }
+        try {
+            BufferedImage invisibilityPotionTXT = ImageIO.read(new File("RobberyBob/Assets/InvisibilityPotionTXT.png"));
+            g.drawImage(invisibilityPotionTXT, storeX + 100, 490, 100, 50, null); 
+        } catch (Exception e) {
+             System.out.println("Gagal memuat gambar InvisibilityPotionTXT: " + e.getMessage());
             e.printStackTrace();
         }
         if (hoveredAbility != -1) {

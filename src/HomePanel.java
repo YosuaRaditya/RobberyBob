@@ -72,9 +72,7 @@ public class HomePanel extends JPanel {
                 }
 
                 if (storeBox.contains(e.getPoint())) {
-                    parentFrame.setContentPane(new StorePanel(parentFrame, bob));
-                    parentFrame.revalidate();
-                    parentFrame.repaint();
+                    openStore();
                     return;
                 }
                 if (optionsBox.contains(e.getPoint())) {
@@ -85,7 +83,13 @@ public class HomePanel extends JPanel {
                 }
             }
         });
-    } 
+    }
+    
+    private void openStore() {
+        parentFrame.setContentPane(new StorePanel(parentFrame, GameData.sharedBob));
+        parentFrame.revalidate();
+        parentFrame.repaint();
+    }
 
     @Override
     protected void paintComponent(Graphics g) {

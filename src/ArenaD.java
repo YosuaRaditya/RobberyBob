@@ -9,7 +9,7 @@ public class ArenaD extends Arena {
         super(
             "RobberyBob/Assets/mapArenaD.jpg", 
             "RobberyBob/Assets/collisionArenaD.jpg", 
-            50, 500, 
+            37, 525, 
             parentFrame,
             getBarangArenaD()  // harus static method supaya bisa dipanggil di sini
         );

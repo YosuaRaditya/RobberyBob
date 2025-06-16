@@ -65,7 +65,13 @@ public class RobberyBob {
     private int pendingGold = 0;
     private int grabAbilityLevel = 1;
     private float grabSpeed = 1.0f;
-
+    private int rottenDonutCount = 0;
+    private int invisibilityPotionCount = 0;
+    
+    private boolean isInvisible = false;
+    private Timer invisibilityTimer;
+    private int invisibilityDuration = 5000;
+    
     public void setOnFinish(Runnable onFinish) {
         this.onFinish = onFinish;
     }
@@ -211,7 +217,14 @@ public class RobberyBob {
             }
             return;
         }
-
+        if (keyCode == KeyEvent.VK_D && rottenDonutCount > 0) {
+            useRottenDonut();
+            return;
+        }
+        if (keyCode == KeyEvent.VK_P && invisibilityPotionCount > 0) {
+            useInvisibilityPotion();
+            return;
+        }
         // Movement logic
         isMoving = true;
 
@@ -359,7 +372,7 @@ public class RobberyBob {
         int barWidth = 200;
         int barHeight = 15;
         int x = 20;
-        int y = 110;
+        int y = 145;
         
         // Draw outline
         g.setColor(Color.BLACK);
@@ -444,10 +457,10 @@ public class RobberyBob {
             }
         } else {
             if (isPlayingSmoke && smokeSprites[smokeIndex] != null) {
-                // Draw smoke animation when unhiding
+                // Draw smoke animation when unhiding or using invisibility potion
                 g.drawImage(smokeSprites[smokeIndex], x, y, width, height, c);
-            } else if (sprites[spriteIndex] != null) {
-                // Draw normal character when not hiding
+            } else if (sprites[spriteIndex] != null && !isInvisible) { // Don't draw Bob when invisible
+                // Draw normal character when not hiding and not invisible
                 Graphics2D g2d = (Graphics2D) g.create();
                 BufferedImage scaledSprite = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
                 Graphics2D gScaled = scaledSprite.createGraphics();
@@ -542,11 +555,24 @@ public class RobberyBob {
         return new Rectangle(x, y, width, height);
     }
 
+    public int getGrabAbilityLevel() {
+        return grabAbilityLevel;
+    }
+
+    public float getMoveSpeedNormal() {
+        return moveSpeedNormal;
+    }
+
+    public float getMoveSpeedFast() {
+        return moveSpeedFast;
+    }
+
     public Ellipse2D getDetectionCircle() {
-        int radius = 40;
+        int baseRadius = 40;
+        int adjustedRadius = baseRadius + (grabAbilityLevel - 1) * 10;
         int centerX = x + width / 2;
         int centerY = y + height / 2;
-        return new Ellipse2D.Double(centerX - radius, centerY - radius, radius * 2, radius * 2);
+        return new Ellipse2D.Double(centerX - adjustedRadius, centerY - adjustedRadius, adjustedRadius * 2, adjustedRadius * 2);
     }
 
     public void drawDetectionArea(Graphics g) {
@@ -663,5 +689,70 @@ public class RobberyBob {
     public void increaseGrabAbility(int amount) {
         this.grabAbilityLevel += amount;
         this.grabSpeed += 0.2f * amount;
+    }
+
+    public void setArah(String arah) {
+        this.arah = arah;
+    }
+
+    public boolean hasRottenDonut() {
+        return rottenDonutCount > 0;
+    }
+
+    public void useRottenDonut() {
+        if (rottenDonutCount <= 0) return;
+        rottenDonutCount--;
+    }
+    
+    public void useInvisibilityPotion() {
+        if (invisibilityPotionCount <= 0 || isInvisible) return;
+        isInvisible = true;
+        invisibilityPotionCount--;
+        if (invisibilityTimer != null) {
+            invisibilityTimer.stop();
+        }
+        invisibilityTimer = new Timer(invisibilityDuration, e -> {
+            isInvisible = false;
+            ((Timer)e.getSource()).stop();
+        });
+        invisibilityTimer.setRepeats(false);
+        invisibilityTimer.start();
+        smokeIndex = 0;
+        isPlayingSmoke = true;
+        if (!smokeTimer.isRunning()) {
+            smokeTimer.start();
+        }
+    }
+    
+    public boolean isInvisible() {
+        return isInvisible;
+    }
+    
+    public void setHasRottenDonut(boolean hasDonut) {
+        if (hasDonut) {
+            rottenDonutCount++;
+        }
+    }
+    
+    public void setHasInvisibilityPotion(boolean hasPotion) {
+        if (hasPotion) {
+            invisibilityPotionCount++;
+        }
+    }
+    
+    // Add methods to get the current counts
+    public int getRottenDonutCount() {
+        return rottenDonutCount;
+    }
+    
+    public int getInvisibilityPotionCount() {
+        return invisibilityPotionCount;
+    }
+
+    public void setPosition(int x, int y) {
+        this.x = x;
+        this.y = y;
+        this.xPos = x;
+        this.yPos = y;
     }
 }

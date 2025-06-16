@@ -30,6 +30,12 @@ public abstract class Penjaga {
     protected BufferedImage collisionMap;
     protected int panelW, panelH;
     protected Runnable onBobCaught;
+    private int smokeIndex = 0;
+    private boolean isPlayingSmoke = false;
+    private Timer smokeTimer;
+    private boolean isUnconscious = false;
+    private Timer unconsciousTimer;
+    private int unconsciousDuration = 5000;
 
     public void setCollisionMap(BufferedImage map, int panelW, int panelH) {
         this.collisionMap = map;
@@ -85,6 +91,12 @@ public abstract class Penjaga {
 
     public void update() {
     if (isTeleporting) return;
+    if (isUnconscious){
+        return;
+    }
+    if (isTeleporting){
+        return;
+    }
 
     boolean bobDetected = false;
     if (targetBob != null) {
@@ -308,6 +320,37 @@ public abstract class Penjaga {
         teleportTimer.start();
     }
 
+    public void makeUnconscious() {
+        if (isUnconscious) return;
+        isUnconscious = true;
+        isPlayingSmoke = true;
+        smokeIndex = 0;
+        if (smokeTimer == null) {
+            smokeTimer = new Timer(100, e -> {
+                smokeIndex++;
+                if (smokeIndex >= 8) {
+                    smokeIndex = 0;
+                    isPlayingSmoke = false;
+                    ((Timer)e.getSource()).stop();
+                }
+            });
+        }
+        if (smokeTimer.isRunning()) {
+            smokeTimer.restart();
+        } else {
+            smokeTimer.start();
+        }
+        if (unconsciousTimer != null) {
+            unconsciousTimer.stop();
+        }
+        unconsciousTimer = new Timer(unconsciousDuration, e -> {
+            isUnconscious = false;
+            ((Timer)e.getSource()).stop();
+        });
+        unconsciousTimer.setRepeats(false);
+        unconsciousTimer.start();
+    }
+
     public void draw(Graphics g) {
         // Gambar area deteksi (persegi panjang merah transparan)
         Graphics2D g2dRadius = (Graphics2D) g.create();
@@ -332,7 +375,34 @@ public abstract class Penjaga {
         }
         g2dRadius.fillRect(rectX, rectY, rectWidth, rectHeight);
         g2dRadius.dispose();
-
+        Graphics2D g2dCone = (Graphics2D) g.create();
+        
+        // Don't draw detection cone if unconscious
+        if (!isUnconscious) {
+            g2dCone.setColor(new Color(255, 0, 0, 60));
+            int centerX = x + width / 2, centerY = y + height / 2, coneLength = 120;
+            double coneAngle = Math.toRadians(40);
+            
+            // Rotasi sesuai arah hadap polisi
+            double angle = 0;
+            switch (arah) {
+                case "kanan": angle = 0; break;
+                case "kiri": angle = Math.PI; break;
+                case "atas": angle = -Math.PI / 2; break;
+                case "bawah": angle = Math.PI / 2; break;
+            }
+            int[] px = new int[3];
+            int[] py = new int[3];
+            
+            px[0] = centerX;
+            py[0] = centerY;
+            px[1] = centerX + (int)(coneLength * Math.cos(angle - coneAngle / 2));
+            py[1] = centerY + (int)(coneLength * Math.sin(angle - coneAngle / 2));
+            px[2] = centerX + (int)(coneLength * Math.cos(angle + coneAngle / 2));
+            py[2] = centerY + (int)(coneLength * Math.sin(angle + coneAngle / 2));
+            g2dCone.fillPolygon(px, py, 3);
+        }
+        g2dCone.dispose();
         // Gambar polisi/penjaga seperti biasa
         if (isTeleporting && teleportFrame < teleportSprites.length && teleportSprites[teleportFrame] != null) {
             g.drawImage(teleportSprites[teleportFrame], x, y, width, height, null);

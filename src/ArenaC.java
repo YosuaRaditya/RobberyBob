@@ -1,15 +1,13 @@
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 
 public class ArenaC extends Arena {
-
     public ArenaC(JFrame parentFrame) {
         super(
             "RobberyBob/Assets/mapArenaC.jpg", 
             "RobberyBob/Assets/collisionArenaC.jpg", 
-            450, 500, 
+            500, 575, 
             parentFrame,
             getBarangArenaC()  // harus static method supaya bisa dipanggil di sini
         );
