@@ -86,6 +86,14 @@ public class Arena extends JPanel {
                         Polisi polisi = (Polisi) penjaga;
                         
                         polisi.makeUnconscious();
+                    }else if (penjaga instanceof Upin) {
+                        Upin upin = (Upin) penjaga;
+                        
+                        upin.makeUnconscious();
+                    }else if (penjaga instanceof Polisi2) {
+                        Polisi2 polisi2 = (Polisi2) penjaga;
+
+                        polisi2.makeUnconscious();
                     }
                 }
             }
@@ -409,7 +417,7 @@ public class Arena extends JPanel {
             int[] yPoints = {cctvy, y1, y2};
             int bobX = bob.x + bob.width / 2, bobY = bob.y + bob.height / 2;
             boolean bobInCone = isPointInTriangle(bobX, bobY, xPoints, yPoints);
-            if (bobInCone) {
+            if (bobInCone && !bob.isInvisible() && !bob.isHiding()) {
                 g2d.setColor(new Color(255, 0, 0, 80));
                 bobDetectedByCCTV = true;
             } else {

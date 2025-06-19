@@ -94,12 +94,9 @@ public abstract class Penjaga {
     if (isUnconscious){
         return;
     }
-    if (isTeleporting){
-        return;
-    }
 
     boolean bobDetected = false;
-    if (targetBob != null) {
+    if (targetBob != null && !targetBob.isInvisible()) {
         int bobCenterX = targetBob.x + targetBob.width / 2;
         int bobCenterY = targetBob.y + targetBob.height / 2;
         int rectWidth = 300;
@@ -196,7 +193,7 @@ public abstract class Penjaga {
             bobTrail.poll();
         }
 
-        if (targetBob != null) {
+        if (targetBob != null && !targetBob.isInvisible()) {
             Rectangle polisiRect = new Rectangle(x, y, width, height);
             Rectangle bobRect = new Rectangle(targetBob.x, targetBob.y, targetBob.width, targetBob.height);
             // Cek overlap rectangle
