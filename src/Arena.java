@@ -177,7 +177,7 @@ public class Arena extends JPanel {
 
         initPauseButton(parentFrame);
         initInventoryButton(parentFrame);
-        setupCCTVandPenjaga();
+        setupCCTVandPenjaga(); 
 
         Timer cctvTimer = new Timer(50, e -> {
             for (int i = 0; i < cctvs.size(); i++) {
